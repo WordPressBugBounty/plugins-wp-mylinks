@@ -1,0 +1,1187 @@
+# Copyright (C) 2024 Walter Pinem
+# This file is distributed under the GPL-2.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP MyLinks 1.0.7\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-mylinks\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-09-26T16:35:38+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.10.0\n"
+"X-Domain: wp-mylinks\n"
+
+#. Plugin Name of the plugin
+#: C:\laragon\www\mylinks\wp-content\plugins\wp-mylinks\wp-mylinks.php
+msgid "WP MyLinks"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: C:\laragon\www\mylinks\wp-content\plugins\wp-mylinks\wp-mylinks.php
+msgid "https://walterpinem.me/projects/introducing-wp-mylinks/"
+msgstr ""
+
+#. Description of the plugin
+#: C:\laragon\www\mylinks\wp-content\plugins\wp-mylinks\wp-mylinks.php
+msgid "Easily build your own micro landing page showing all the links you want to share to engage your audience. Use your own brand, link it anywhere."
+msgstr ""
+
+#. Author of the plugin
+#: C:\laragon\www\mylinks\wp-content\plugins\wp-mylinks\wp-mylinks.php
+#: admin/partials/wp-mylinks-admin-settings.php:387
+msgid "Walter Pinem"
+msgstr ""
+
+#. Author URI of the plugin
+#: C:\laragon\www\mylinks\wp-content\plugins\wp-mylinks\wp-mylinks.php
+msgid "https://walterpinem.me/"
+msgstr ""
+
+#. translators: %3$s is the link to the Hide Admin Notice setting
+#: admin/class-wp-mylinks-admin.php:186
+msgid "<b>Quick Start Tutorial:</b><br /><ol><li>Go ahead and publish your first <a href=\"%1$s\"><b>MyLinks</b></a> page.</li><li>If your MyLinks page encounters 404 Not Found, go to <a href=\"%2$s\"><b>Permalinks</b></a> page and click the <b>Save Changes</b> button without changing anything.</li><li>If everything's alright, hide this notice by ticking the <a href=\"%3$s\"><b>Hide Admin Notice</b></a> checkbox.</li></ol>"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:100
+msgid "Welcome"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:101
+msgid "Global"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:102
+msgid "Custom Script"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:103
+msgid "Support"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:111
+#: admin/partials/wp-mylinks-admin-settings.php:540
+#: includes/class-wp-mylinks-post-type.php:683
+msgid "Custom Scripts & Styles"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:112
+msgid "Add custom scripts and styles for the MyLinks page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:114
+msgid "Analytics Tracking Scripts"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:115
+msgid "Track how the MyLinks page performs with Google Analytics and any other analytics scripts."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:120
+msgid "Analytics Script"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:125
+msgid "Please include the <code>&lt;script&gt;</code>...<code>&lt;/script&gt;</code> tags."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:132
+msgid "Custom Scripts"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:134
+msgid "You can put about anything you want from Google Tag Manager to Facebook Pixel script in the header and footer sections of the<br> MyLinks page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:141
+msgid "Header"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:146
+msgid "Anything you put here will be included in <code>&lt;head&gt;</code>. Please include <code>&lt;script&gt;</code> etc."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:152
+msgid "After Body Tag"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:157
+msgid "Inserted script will be placed after the opening <code>&lt;body&gt;</code> tag. Please include the <code>&lt;script&gt;</code>...<code>&lt;/script&gt;</code> tags"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:163
+msgid "Footer"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:168
+#: includes/class-wp-mylinks-post-type.php:707
+msgid "Anything you put here will be placed just before <code>&lt;/body&gt;</code>. Please include <code>&lt;script&gt;</code> etc."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:175
+#: includes/class-wp-mylinks-post-type.php:719
+msgid "Custom Styles"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:177
+msgid "You can set custom styles for the MyLinks page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:184
+msgid "Custom CSS"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:189
+msgid "Add your custom css code <b>without</b> the <code>&lt;style&gt;</code> tag."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:196
+msgid "Dequeue Other Scripts and Styles"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:198
+msgid "<strong>Experimental!</strong> Some plugins might add additional scripts and styles into the MyLink page, which could result in display issues. By activating this feature, this plugin will forcibly remove all scripts and styles added by other plugins."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:202
+msgid "Should you encounter issues like images not displaying properly, missing images, or styling problems, you may need to enable this feature."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:209
+msgid "Dequeue"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:213
+msgid "Dequeue All Scripts and Styles"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:216
+msgid "This will dequeue other plugins' scripts and styles only on MyLink page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:232
+msgid "Global Configurations"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:233
+msgid "Unless set on individual MyLinks page, below configurations will be implemented globally."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:235
+msgid "Display Settings"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:236
+msgid "Determine how you want the MyLinks page to look like globally."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:241
+msgid "Global Theme"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:246
+#: wp-mylinks.php:179
+msgid "Default"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:247
+#: wp-mylinks.php:180
+msgid "Merbabu"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:248
+#: wp-mylinks.php:181
+msgid "Cikuray"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:249
+#: wp-mylinks.php:182
+msgid "Ciremai"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:250
+#: wp-mylinks.php:183
+msgid "Slamet"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:251
+#: wp-mylinks.php:184
+msgid "Papandayan"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:252
+#: wp-mylinks.php:185
+msgid "Sindoro"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:253
+#: wp-mylinks.php:186
+msgid "Krakatau"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:254
+#: wp-mylinks.php:187
+msgid "Bromo"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:255
+#: wp-mylinks.php:188
+msgid "Prau"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:256
+#: wp-mylinks.php:189
+msgid "Polos"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:257
+#: wp-mylinks.php:190
+msgid "Datar"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:258
+#: wp-mylinks.php:191
+msgid "Pastel"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:259
+#: wp-mylinks.php:192
+msgid "Kopi Hitam"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:260
+#: wp-mylinks.php:193
+msgid "Kopi Susu"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:261
+#: wp-mylinks.php:194
+msgid "Klepon Viral"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:263
+msgid "Set the theme for the MyLinks page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:268
+msgid "Show Some ❤ to Support Me?"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:272
+msgid "Yes, I Definitely Want to Support You"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:275
+msgid "This will add credits on the footer of MyLinks page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:281
+msgid "Hide Admin Notice?"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:285
+msgid "Everything's Alright, Hide Notice Now"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:288
+msgid "This will hide admin notice to flush your permalinks."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:297
+msgid "Setup Global Meta Tags"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:299
+msgid "Meta tags for the MyLinks page, will be shown both on search engine result and browser tab. If you use Yoast SEO or built-in<br> <strong>Setup Meta Tags</strong> form and already set both the <code>meta title</code> and <code>description</code> on MyLinks post editor, they will be used<br> instead of below values."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:304
+#: includes/class-wp-mylinks-post-type.php:611
+msgid "Meta Title"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:307
+msgid "e.g. Your MyLinks Title | Your Site Title"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:309
+msgid "Set the meta title for the MyLinks page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:315
+#: includes/class-wp-mylinks-post-type.php:624
+msgid "Meta Description"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:320
+msgid "Set the meta description of the MyLinks page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:326
+msgid "Custom Favicon"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:332
+msgid "Set a favicon for the MyLinks page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:338
+msgid "Set to <code>noindex</code>?"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:342
+msgid "Yes, Set to <code>noindex</code>"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:345
+#: includes/class-wp-mylinks-post-type.php:637
+msgid "This will prevent MyLinks page from being indexed on search engine."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:351
+msgid "Set to <code>nofollow</code>?"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:355
+msgid "Yes, Set to <code>nofollow</code>"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:358
+#: includes/class-wp-mylinks-post-type.php:650
+msgid "This will ban crawlers to follow all the links on the MyLinks page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:372
+msgid "<strong>WP MyLinks</strong> is Waiting for Your Feedback"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:375
+msgid "<strong>WP MyLinks</strong> is my fourth plugin and it's open source. I acknowledge that there are still a lot to fix, here and there, that's why I really need your feedback. <br>Send a feedback through some of below options to contact me:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:385
+msgid "Author:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:391
+msgid "Website:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:393
+msgid "walterpinem.me"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:398
+msgid "walterpinem.com"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:402
+msgid "www.seniberpikir.com"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:406
+msgid "Email:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:408
+msgid "hello@walterpinem.me"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:411
+msgid "More:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:413
+msgid "Video Tutorial"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:418
+msgid "Customization Service"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:423
+msgid "Support & Feature Request"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:428
+msgid "Other Projects"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:432
+msgid "Portfolio"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:436
+msgid "Linkedin"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:441
+msgid "Donate"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:449
+#: admin/partials/wp-mylinks-admin-settings.php:553
+msgid "Created with ❤️ and ☕ in Jakarta, Indonesia by <a href=\"https://walterpinem.me\" target=\"_blank\"><strong>Walter Pinem</strong></a>"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:459
+msgid "Thank You For Using<br> WP MyLinks"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:464
+msgid "Build Fully Customizable Micro Landing Pages For Your Brand!"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:467
+msgid "<strong>WP MyLinks</strong> can help you create a micro landing page that contains all the links you want to share to your audience with the tool you're currently using and the domain name that reflects your own brand. Share one single link for everything!"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:468
+msgid "Want to Expand the WP MyLinks' Features?"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:469
+msgid "Imagine having the power to transform the WP MyLinks plugin into a personalized powerhouse based on your imagination, ideas, and needs. Sounds too good to be true? Well, buckle up, because now I'm offering customization service to expand WP MyLinks' features and unlock its true potentials!"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:470
+msgid "All customization service fees are highly affordable and negotiable."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:472
+msgid "Send Inquiry"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:478
+msgid "Watch the Complete Overview and Tutorial"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:489
+msgid "Let's Get Started"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:491
+msgid "Step #1:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:491
+msgid "Build your very first micro landing page on <a href=\"post-new.php?post_type=mylink\" target=\"_blank\"><strong>New MyLink</strong></a> page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:492
+msgid "Step #2:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:492
+msgid "Setup your profile including avatar, description, and social media links."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:493
+msgid "Step #3:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:493
+msgid "Add unlimited number of links you want to share to your audience."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:494
+msgid "Step #4:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:494
+#: includes/class-wp-mylinks-post-type.php:176
+msgid "Choose a theme that matches your personal or business brand."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:495
+msgid "Step #5:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:495
+msgid "Setup global settings for your micro landing pages on <a href=\"edit.php?post_type=mylink&page=welcome&tab=global\" target=\"_blank\"><strong>Global Configurations</strong></a> setting panel."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:496
+msgid "Step #6:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:496
+msgid "Add custom styles and scripts to your micro landing pages on <a href=\"edit.php?post_type=mylink&page=welcome&tab=script\" target=\"_blank\"><strong>Custom Script</strong></a> setting panel."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:497
+msgid "Step #7:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:497
+msgid "<strong>Have an inquiry?</strong> Find out how to reach out to me on <a href=\"edit.php?post_type=mylink&page=welcome&tab=tutorial_support\" target=\"_blank\"><strong>Support</strong></a> panel."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:500
+msgid "If you encounter 404 page not found issue, please follow the steps below:"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:502
+msgid "Go to <b>Settings</b> => <a href=\"options-permalink.php\"><b>Permalinks</b></a> page."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:503
+msgid "Click the <b>Save Changes</b> button without having to change anything."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:504
+msgid "Recheck your MyLink page. The issue will most likely disappear."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:506
+msgid "If the problem persists, you might also want to make sure that you are using pretty permalinks (Post name), but be careful! Changing your current permalinks structure to another will affect your entire URLs, and will be very bad for SEO!"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:513
+msgid "Unlimited Landing Pages"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:514
+msgid "Build unlimited number of micro landing pages that host unlimited number of links."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:518
+msgid "One Link for Everything"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:519
+msgid "Every created micro landing page will have one link that you can share anywhere on your networks."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:526
+msgid "Use Your Own Brand"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:527
+msgid "You already have your own brand through a domain name. Use it on your micro landing page and get boosted!"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:532
+msgid "15+ Themes to Choose From"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:533
+msgid "Choose a theme that can represent your brand or taste. Or you can also add custom CSS to use your own."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:541
+msgid "Track how every landing page performs easily with Google Analytics, Facebook Pixel etc or customize the look. You have the options."
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:546
+msgid "Comprehensive Documentation"
+msgstr ""
+
+#: admin/partials/wp-mylinks-admin-settings.php:547
+msgid "You will not be left alone. My complete documentation or tutorial will always help and support all your needs to get started."
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:22
+msgctxt "Post Type General Name"
+msgid "MyLinks Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:23
+msgctxt "Post Type Singular Name"
+msgid "MyLinks Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:24
+msgctxt "Admin Menu text"
+msgid "Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:25
+msgctxt "Add New on Toolbar"
+msgid "MyLinks Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:26
+#: admin/partials/wp-mylinks-links-collection.php:27
+#: admin/partials/wp-mylinks-links-collection.php:28
+#: admin/partials/wp-mylinks-links-collection.php:52
+#: admin/partials/wp-mylinks-links-collection.php:53
+msgid "Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:29
+msgid "All Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:30
+msgid "Add New MyLink Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:31
+#: includes/class-wp-mylinks-post-type.php:26
+msgid "Add New"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:32
+msgid "New Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:33
+msgid "Edit MyLink Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:34
+msgid "Update Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:35
+#: admin/partials/wp-mylinks-links-collection.php:36
+msgid "View Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:37
+msgid "Search Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:38
+#: includes/class-wp-mylinks-post-type.php:33
+msgid "Not found"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:39
+#: includes/class-wp-mylinks-post-type.php:34
+msgid "Not found in Trash"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:40
+#: includes/class-wp-mylinks-post-type.php:35
+#: includes/class-wp-mylinks-post-type.php:36
+#: includes/class-wp-mylinks-post-type.php:554
+msgid "Featured Image"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:41
+msgid "Set featured image"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:42
+#: includes/class-wp-mylinks-post-type.php:37
+msgid "Remove featured image"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:43
+#: includes/class-wp-mylinks-post-type.php:38
+msgid "Use as featured image"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:44
+msgid "Insert into Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:45
+msgid "Uploaded to this Collection"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:46
+msgid "Collection list"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:47
+msgid "Collection list navigation"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:48
+msgid "Filter Collection list"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:86
+#: admin/partials/wp-mylinks-links-collection.php:94
+msgid "Link"
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:95
+msgid "Include the http:// or https:// protocol, including trailing slash (/) if applicable."
+msgstr ""
+
+#: admin/partials/wp-mylinks-links-collection.php:98
+msgid "If you have a link that you will reuse later, add it here so upon building your MyLink page, this link will be searchable."
+msgstr ""
+
+#: includes/class-wp-mylinks-loader.php:210
+msgid "Select"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:17
+msgctxt "Post Type General Name"
+msgid "MyLinks"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:18
+msgctxt "Post Type Singular Name"
+msgid "MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:19
+msgctxt "Admin Menu text"
+msgid "MyLinks"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:20
+msgctxt "Add New on Toolbar"
+msgid "MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:21
+msgid "MyLink Archives"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:22
+msgid "MyLink Attributes"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:23
+msgid "Parent MyLink:"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:24
+msgid "All MyLinks"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:25
+msgid "Add New MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:27
+msgid "New MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:28
+msgid "Edit MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:29
+msgid "Update MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:30
+msgid "View MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:31
+msgid "View MyLinks"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:32
+msgid "Search MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:39
+msgid "Insert into MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:40
+msgid "Uploaded to this MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:41
+msgid "MyLinks list"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:42
+msgid "MyLinks list navigation"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:43
+msgid "Filter MyLinks list"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:53
+msgid "MyLink"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:54
+msgid "Create micro landing pages that host all of your contents, products, etc to engage your audience and increase your brand awareness."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:103
+msgid "MyLinks Profile"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:111
+msgid "Avatar"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:112
+msgid "Upload an avatar, preferably square in size."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:115
+msgid "Build a profile section for your MyLinks page."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:130
+msgid "Avatar Style"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:132
+msgid "Choose the avatar style."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:136
+msgid "Story-Like Border"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:137
+msgid "Shadowy"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:138
+msgid "Plain"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:139
+msgid "Transparent"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:146
+msgid "Name"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:147
+msgid "Add your name or username that will be shown under your avatar."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:158
+msgid "Description"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:159
+msgid "Add your profile description that will be shown under your name. Compatible with HTML."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:175
+msgid "Theme"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:178
+msgid "Determine how you want the MyLinks page to look like. You can set its theme individually here or select <code>None</code>to<br> apply global theme you set on <a href=\"edit.php?post_type=mylink&page=welcome&tab=global\" target=\"_blank\"><strong>Global Configurations</strong></a> page instead."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:193
+msgid "Social Media"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:201
+msgid "Position"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:203
+msgid "Choose the Social Media profile icons position."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:207
+msgid "Top"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:208
+msgid "Bottom"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:216
+msgid "Facebook URL"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:217
+msgid "Add your Facebook profile."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:220
+msgid "Setup social links that will appear under your profile section."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:229
+msgid "Facebook Icon"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:230
+msgid "If you don't like the default icon please upload your own icon for Facebook, preferably square in size."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:248
+msgid "Twitter URL"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:249
+msgid "Add your Twitter profile."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:260
+msgid "Twitter Icon"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:261
+msgid "If you don't like the default icon please upload your own icon for Twitter, preferably square in size."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:279
+msgid "Linkedin URL"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:280
+msgid "Add your Linkedin profile."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:291
+msgid "Linkedin Icon"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:292
+msgid "If you don't like the default icon please upload your own icon for Linkedin, preferably square in size."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:310
+msgid "Instagram URL"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:311
+msgid "Add your Instagram profile."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:322
+msgid "Instagram Icon"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:323
+msgid "If you don't like the default icon please upload your own icon for Instagram, preferably square in size."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:341
+msgid "Youtube URL"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:342
+msgid "Add your Youtube profile."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:353
+msgid "Youtube Icon"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:354
+msgid "If you don't like the default icon please upload your own icon for Youtube, preferably square in size."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:372
+msgid "Pinterest URL"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:373
+msgid "Add your Pinterest profile."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:384
+msgid "Pinterest Icon"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:385
+msgid "If you don't like the default icon please upload your own icon for Pinterest, preferably square in size."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:403
+msgid "TikTok URL"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:404
+msgid "Add your TikTok profile."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:415
+msgid "TikTok Icon"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:416
+msgid "If you don't like the default icon please upload your own icon for TikTok, preferably square in size."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:434
+msgid "Discord URL"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:435
+msgid "Add your Discord profile."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:446
+msgid "Discord Icon"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:447
+msgid "If you don't like the default icon please upload your own icon for Discord, preferably square in size."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:468
+msgid "Links"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:478
+msgid "Set a link and its title. You can add unlimited number of buttons to your liking by clicking \"Add Another Link\" button."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:480
+msgid "Link {#}"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:481
+msgid "Add Another Link"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:482
+msgid "Remove Link"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:484
+msgid "Really? Remove This Link?"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:491
+msgid "Title"
+msgstr ""
+
+#. translators: %s: MyLinks Collection page
+#: includes/class-wp-mylinks-post-type.php:506
+msgid "Select a link from the list you have previously prepared on <a href=\"%s\" target=\"_blank\"><strong>Collection</strong></a> page, existing posts or pages."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:514
+msgid "Link URL"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:534
+msgid "Selected URL"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:538
+msgid "If you want to manually add a link or edit it, just do it here."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:548
+msgid "Image"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:552
+msgid "Add featured image for your link, preferably square in size or use a landscape-sized image if you choose <b>Yes</b> for the <b>Use Card Layout for this Link?</b> option below."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:561
+msgid "Use Card Layout for this Link?"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:563
+msgid "If <b>Yes</b> is chosen, the featured image you chose on the <b>Image</b> section above will be used as the background image of this link. <br/>Please make sure to fill all the <b>Title</b>, <b>URL</b>, <b>Image</b> fields above and <b>empty</b> the Youtube Video field below."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:567
+#: includes/class-wp-mylinks-post-type.php:642
+#: includes/class-wp-mylinks-post-type.php:655
+msgid "Yes"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:568
+#: includes/class-wp-mylinks-post-type.php:643
+#: includes/class-wp-mylinks-post-type.php:656
+msgid "No"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:576
+msgid "Youtube Video"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:582
+msgid "Enter the full Youtube video URL. <b>Please do not fill</b> the other fields, make sure to only fill the Youtube URL field."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:588
+msgid "Media Embed"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:594
+msgid "You can embed TikTok videos, Tweets, Spotify playlist, or any other media from the list of <a href=\"https://wordpress.org/documentation/article/embeds/#list-of-sites-you-can-embed-from\" target=\"_blank\" rel=\"noopener noreferrer\">WordPress's supported sites</a>."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:602
+msgid "Setup Meta Tags & Favicon"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:603
+msgid "If you use Yoast SEO, set the meta title on Yoast's meta box instead."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:612
+msgid "Set the meta title for this page."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:615
+msgid "If you use Yoast SEO, you can set the meta tags on Yoast SEO's meta box. Or you can also set global meta tags on<br> <a href=\"edit.php?post_type=mylink&page=welcome&tab=global\" target=\"_blank\"><strong>Global Configurations</strong></a>. You can also set custom favicon independently for this MyLinks page."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:625
+msgid "Set the meta description for this page."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:636
+msgid "Set to Noindex?"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:649
+msgid "Set to Nofollow?"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:662
+msgid "Favicon"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:663
+msgid "Set custom favicon for this MyLinks page."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:684
+msgid "Add custom script and styles independently for this MyLinks page."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:692
+msgid "Header Script"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:693
+msgid "Anything you put here will be included inside <code>&lt;head&gt;</code>. Please include <code>&lt;script&gt;</code> etc."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:696
+msgid "Add custom scripts and styles independently for this MyLinks page. Or you can leave these fields blank and set it on<br> <a href=\"edit.php?post_type=mylink&page=welcome&tab=global\" target=\"_blank\"><strong>Global Configurations</strong></a> instead."
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:706
+msgid "Footer Script"
+msgstr ""
+
+#: includes/class-wp-mylinks-post-type.php:720
+msgid "Add your custom css code without the <code>&lt;style&gt;</code> tag."
+msgstr ""
+
+#: public/partials/wp-mylinks-base-template.php:237
+msgid "Unable to embed the content. Reason: "
+msgstr ""
+
+#: public/partials/wp-mylinks-base-template.php:239
+msgid "Unable to embed the content."
+msgstr ""
+
+#: wp-mylinks.php:164
+msgid "Settings"
+msgstr ""
+
+#: wp-mylinks.php:178
+msgid "None"
+msgstr ""
