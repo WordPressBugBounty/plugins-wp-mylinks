@@ -1,29 +1,66 @@
-(function( $ ) {
+/**
+ * WP MyLinks — Admin JavaScript
+ *
+ * Wires up WordPress media library uploaders for the global Favicon and the
+ * global Open Graph share image inputs on Settings → MyLinks → Global.
+ *
+ * @package Wp_Mylinks
+ * @since   1.0.0
+ */
+(function ($) {
 	'use strict';
 
 	/**
-	 * All of the code for admin-facing JavaScript source.
+	 * Open the WP media frame and write the chosen URL into the target input.
+	 *
+	 * Each (button, input) pair gets its own media frame so picking a favicon
+	 * doesn't accidentally overwrite the og:image and vice versa.
+	 *
+	 * @param {jQuery} $button Button being clicked.
+	 * @param {string} title   Title shown on the modal.
+	 * @param {string} target  Selector for the input that receives the URL.
 	 */
+	function openMediaFrame($button, title, target) {
+		if (typeof wp === 'undefined' || typeof wp.media !== 'function') {
+			return;
+		}
 
-})( jQuery );
+		var frameKey = 'mylinks_media_frame_' + target.replace(/[^a-z0-9_]/gi, '');
+		var frame    = $button.data(frameKey);
 
-jQuery(document).ready(function($){
-  var mediaUploader;
-  $('#upload_image_button').click(function(e) {
-    e.preventDefault();
-      if (mediaUploader) {
-      mediaUploader.open();
-      return;
-    }
-    mediaUploader = wp.media.frames.file_frame = wp.media({
-      title: 'Choose Favicon',
-      button: {
-      text: 'Choose Favicon'
-    }, multiple: false });
-    mediaUploader.on('select', function() {
-      var attachment = mediaUploader.state().get('selection').first().toJSON();
-      $('#mylinks_upload_favicon').val(attachment.url);
-    });
-    mediaUploader.open();
-  });
-});
+		if (frame) {
+			frame.open();
+			return;
+		}
+
+		frame = wp.media({
+			title:    title,
+			button:   { text: title },
+			multiple: false
+		});
+
+		frame.on('select', function () {
+			var attachment = frame.state().get('selection').first().toJSON();
+			if (attachment && attachment.url) {
+				$(target).val(attachment.url);
+			}
+		});
+
+		$button.data(frameKey, frame);
+		frame.open();
+	}
+
+	$(function () {
+		// Original favicon uploader (unchanged contract).
+		$('#upload_image_button').on('click', function (event) {
+			event.preventDefault();
+			openMediaFrame($(this), 'Choose Favicon', '#mylinks_upload_favicon');
+		});
+
+		// New og:image uploader (1.0.8+).
+		$('#wp_mylinks_og_image_button').on('click', function (event) {
+			event.preventDefault();
+			openMediaFrame($(this), 'Choose Share Image', '#wp_mylinks_og_image');
+		});
+	});
+})(jQuery);

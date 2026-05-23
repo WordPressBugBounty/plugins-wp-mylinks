@@ -41,7 +41,7 @@ class PW_CMB2_Field_Select2
 			$field_type_object->type = new CMB2_Type_Select($field_type_object);
 		}
 
-		echo $field_type_object->select(array(
+		echo $field_type_object->select(array( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CMB2 escapes its own select output internally.
 			'class'            => 'pw_select2 pw_select',
 			'desc'             => $field_type_object->_desc(true),
 			'options'          => '<option></option>' . $field_type_object->concat_items(),
@@ -72,13 +72,13 @@ class PW_CMB2_Field_Select2
 		));
 
 		$attrs = $field_type_object->concat_attrs($a, array('desc', 'options'));
-		echo sprintf('<select%s>%s</select>%s', $attrs, $a['options'], $a['desc']);
+		echo sprintf('<select%s>%s</select>%s', $attrs, $a['options'], $a['desc']); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CMB2 escapes attrs, options, and desc internally.
 	}
 
 	/**
 	 * Return list of options for pw_multiselect
 	 */
-	public function get_pw_multiselect_options($field_escaped_value = array(), $field_type_object)
+	public function get_pw_multiselect_options($field_type_object, $field_escaped_value = array())
 	{
 		$options = (array) $field_type_object->field->options();
 

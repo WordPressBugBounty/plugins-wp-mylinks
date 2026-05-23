@@ -1,876 +1,1031 @@
+/**
+ * WP MyLinks — Public Styles
+ *
+ * Frontend styles for the standalone MyLink landing-page template.
+ * Indentation: tabs, per WordPress CSS Coding Standards.
+ *
+ * @package Wp_Mylinks
+ * @since   1.0.0
+ */
+
+/* -----------------------------------------------------------------------------
+ * 1. Base
+ * -------------------------------------------------------------------------- */
+
 html {
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Open Sans, Helvetica Neue, sans-serif;
-  font-size: 112.5%;
-  line-height: 1.67;
-  color: #232323;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+	font-size: 112.5%;
+	line-height: 1.67;
+	color: #232323;
 }
+
 body,
 html {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
+	margin: 0;
+	padding: 0;
+	overflow-x: hidden;
 }
+
 a {
-  text-decoration: none;
+	text-decoration: none;
 }
+
+/* -----------------------------------------------------------------------------
+ * 2. Layout
+ * -------------------------------------------------------------------------- */
+
 .mylinks-footer {
-  margin: 100px auto 10px;
+	margin: 100px auto 10px;
 }
+
 .mylinks-body .mylinks,
 .mylinks-body .wp-mylinks-credits {
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 500px;
-  width: 100%;
-  padding: 0;
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 500px;
+	width: 100%;
+	padding: 0;
 }
+
 .mylinks-body .wp-mylinks-credits,
 .mylinks-body .wp-mylinks-credits a {
-  text-align: center;
-  margin: 100px auto 10px;
-  text-align: center;
-  font-size: 14px;
-  color: #000032;
+	margin: 100px auto 10px;
+	font-size: 14px;
+	color: #000032;
+	text-align: center;
 }
+
+/* -----------------------------------------------------------------------------
+ * 3. Profile (avatar, name, description)
+ * -------------------------------------------------------------------------- */
+
 .mylinks-body .name h1 {
-  font-weight: 700;
-  font-size: 115%;
+	font-weight: 700;
+	font-size: 115%;
 }
+
 .mylinks-body .avatar,
 .mylinks-body .description,
 .mylinks-body .name h1 {
-  margin-bottom: 1.4rem;
-  text-align: center;
+	margin-bottom: 1.4rem;
+	text-align: center;
 }
+
 .mylinks .avatar {
-  position: relative;
-  padding: 5px;
-  border-radius: 50%;
-  width: 150px;
-  height: 150px;
-  margin: 30px auto 20px;
+	position: relative;
+	width: 150px;
+	height: 150px;
+	margin: 30px auto 20px;
+	padding: 5px;
+	border-radius: 50%;
 }
+
 .mylinks-body .avatar img {
-  position: absolute;
-  border-radius: 50%;
-  -webkit-border-radius: 50%;
-  -moz-border-radius: 50%;
-  display: block;
-  margin: 30px auto;
-  top: -25px;
-  background: #fff;
-  padding: 5px;
-  left: 5px;
+	position: absolute;
+	top: -25px;
+	left: 5px;
+	display: block;
+	margin: 30px auto;
+	padding: 5px;
+	background: #fff;
+	border-radius: 50%;
 }
+
 @media (min-width: 481px) and (max-width: 767px) {
-  .mylinks .avatar {
-      width: 130px;
-      height: 130px;
-  }
-  .mylinks-body .avatar img {
-      width: 120px;
-      height: 120px;
-  }
+
+	.mylinks .avatar {
+		width: 130px;
+		height: 130px;
+	}
+
+	.mylinks-body .avatar img {
+		width: 120px;
+		height: 120px;
+	}
 }
+
 @media (min-width: 320px) and (max-width: 480px) {
-  .mylinks .avatar {
-      width: 100px;
-      height: 100px;
-  }
-  .mylinks-body .avatar img {
-      width: 90px;
-      height: 90px;
-  }
+
+	.mylinks .avatar {
+		width: 100px;
+		height: 100px;
+	}
+
+	.mylinks-body .avatar img {
+		width: 90px;
+		height: 90px;
+	}
 }
+
+/* -----------------------------------------------------------------------------
+ * 4. Link buttons
+ * -------------------------------------------------------------------------- */
+
 .mylinks-body .button {
-  display: block;
-  border: 2px solid #273d3b;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  padding: 1rem 0.33rem;
-  -webkit-transition: background-color 0.38s ease, color 0.38s ease;
-  transition: background-color 0.38s ease, color 0.38s ease;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  position: relative;
-  box-shadow: 0 8px 5px -5px rgba(0, 0, 0, 0.4);
+	position: relative;
+	display: block;
+	margin-bottom: 1rem;
+	padding: 1rem 0.33rem;
+	border: 2px solid #273d3b;
+	border-radius: 4px;
+	transition: background-color 0.38s ease, color 0.38s ease;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
+
 .mylinks-body .button:hover {
-  -webkit-box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
-  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+	box-shadow:
+		0 5px 5px -3px rgb(0 0 0 / 0.2),
+		0 8px 10px 1px rgb(0 0 0 / 0.14),
+		0 3px 14px 2px rgb(0 0 0 / 0.12);
 }
+
 .mylinks-body .hidden-wrap,
 .mylinks-body .thumbnail-wrap {
-  padding: 2px 0;
-  float: left;
-  z-index: 1;
-  vertical-align: middle;
-  display: block;
-  margin: 0;
-  position: absolute;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
+	position: absolute;
+	top: 50%;
+	z-index: 1;
+	display: block;
+	float: left;
+	margin: 0;
+	padding: 2px 0;
+	vertical-align: middle;
+	transform: translateY(-50%);
 }
+
 .mylinks-body .link-text {
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  word-break: break-word;
-  -ms-hyphens: auto;
-  -webkit-hyphens: auto;
-  hyphens: auto;
-  white-space: normal;
-  margin-left: 80px;
-  margin-right: 15px;
-  line-height: 20px;
-  text-align: left;
-  display: block;
-  text-indent: 0;
-  font-weight: 500;
+	display: block;
+	margin-left: 80px;
+	margin-right: 15px;
+	line-height: 20px;
+	font-weight: 500;
+	text-align: left;
+	text-indent: 0;
+	white-space: normal;
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+	word-break: break-word;
+	hyphens: auto;
 }
+
 .mylinks-body img.link-image {
-  height: 100%;
-  width: 100%;
-  max-width: 50px;
-  object-fit: cover;
-  width: 50px;
-  height: 50px;
-  pointer-events: none;
-  float: left;
-  border-radius: 4px;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
+	float: left;
+	width: 50px;
+	height: 50px;
+	max-width: 50px;
+	object-fit: cover;
+	border-radius: 4px;
+	pointer-events: none;
 }
+
+/* -----------------------------------------------------------------------------
+ * 5. Social icons
+ * -------------------------------------------------------------------------- */
+
 .mylinks-body .user-profile-link,
 .mylinks-body .user-profile__social-icon {
-  cursor: pointer;
-  width: 60px;
-  max-width: 50px;
-  transition: transform cubic-bezier(0.23, 1, 0.32, 1);
-  padding: 5px;
+	width: 60px;
+	max-width: 50px;
+	padding: 5px;
+	cursor: pointer;
+	transition: transform cubic-bezier(0.23, 1, 0.32, 1);
 }
+
 .mylinks-body .user-profile {
-  margin: 30px auto 20px;
-  position: relative;
-  left: 0;
-  width: 100%;
-  display: block;
-  padding-bottom: 12px;
-  text-align: center;
+	position: relative;
+	left: 0;
+	display: block;
+	width: 100%;
+	margin: 30px auto 20px;
+	padding-bottom: 12px;
+	text-align: center;
 }
+
 .mylinks-body .button,
 .mylinks-body .description {
-  margin-left: 25px;
-  margin-right: 25px;
+	margin-left: 25px;
+	margin-right: 25px;
 }
+
 .media-embed iframe {
-  width: 100%;
-  max-width: 100%;
+	width: 100%;
+	max-width: 100%;
 }
+
+/* -----------------------------------------------------------------------------
+ * 6. Animations (defined once, used by multiple themes)
+ * -------------------------------------------------------------------------- */
+
+@keyframes slidebg {
+
+	to {
+		background-position: 80vw;
+		transform: translate3d(0, 0, 0);
+	}
+}
+
+/* -----------------------------------------------------------------------------
+ * 7. Theme: Default
+ * -------------------------------------------------------------------------- */
+
 .default .button {
-  color: #f5f5f5;
-  border: 2px solid #273d3b;
-  background-color: #273d3b;
+	color: #f5f5f5;
+	background-color: #273d3b;
+	border: 2px solid #273d3b;
 }
+
 .default .button:hover {
-  background-color: transparent;
-  color: #273d3b;
+	color: #273d3b;
+	background-color: transparent;
 }
+
 .default .mylink-card,
 .default .youtube-player,
 .default .media-embed iframe {
-  border-radius: 4px;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
-  margin-bottom: 1rem;
+	margin-bottom: 1rem;
+	border-radius: 4px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 8. Theme: Papandayan
+ * -------------------------------------------------------------------------- */
+
 .papandayan {
-  background: linear-gradient(0deg, #d463a3, #fd8f67) !important;
+	background: linear-gradient(0deg, #d463a3, #fd8f67) !important;
 }
-.papandayan img.mylinks-social-icons {
-  box-shadow: 0 20px 25px 0 rgba(0, 0, 0, 0.15);
-}
+
 .papandayan .description,
-.papandayan .name {
-  color: #fff;
-}
-.papandayan .button {
-  color: #273d3b;
-  border: 2px solid #fff;
-  background-color: #fff;
-}
-.papandayan .button:hover {
-  background-color: transparent;
-  color: #fff;
-  border: 2px solid #fff;
-}
-.papandayan .wp-mylinks-credits {
-  color: #fff;
-}
+.papandayan .name,
+.papandayan .wp-mylinks-credits,
 .papandayan .wp-mylinks-credits a {
-  color: #fff;
+	color: #fff;
 }
+
+.papandayan img.mylinks-social-icons {
+	box-shadow: 0 20px 25px 0 rgb(0 0 0 / 0.15);
+}
+
+.papandayan .button {
+	color: #273d3b;
+	background-color: #fff;
+	border: 2px solid #fff;
+}
+
+.papandayan .button:hover {
+	color: #fff;
+	background-color: transparent;
+	border: 2px solid #fff;
+}
+
 .papandayan .mylink-card,
 .papandayan .youtube-player,
 .papandayan .media-embed iframe {
-  border-radius: 4px;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
-  margin-bottom: 1rem;
+	margin-bottom: 1rem;
+	border-radius: 4px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 9. Theme: Prau
+ * -------------------------------------------------------------------------- */
+
 .prau {
-  background: #1f1858;
-  background: linear-gradient(0deg, #1f1858 0, #fd1d1d 50%, #fcb045 100%);
+	background: linear-gradient(0deg, #1f1858 0, #fd1d1d 50%, #fcb045 100%);
 }
+
 .prau .description,
-.prau .name {
-  color: #fff;
-}
-.prau .mylinks,
-.prau .wp-mylinks-credits {
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 500px;
-  width: 100%;
-}
-.prau .avatar,
-.prau .description {
-  margin-bottom: 1.4rem;
-  text-align: center;
-}
-.prau img.mylinks-social-icons {
-  box-shadow: 0 20px 25px 0 rgba(0, 0, 0, 0.15);
-}
-.prau .button {
-  color: #273d3b;
-  border: 2px solid #fff;
-  background-color: #fff;
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  margin-bottom: 0.66rem;
-}
-.prau .button:hover {
-  background: #e52d27;
-  background: -webkit-linear-gradient(to right, #b31217, #e52d27);
-  background: linear-gradient(to right, #b31217, #e52d27);
-  color: #fff;
-  border: 2px solid #fff;
-  animation: slidebg 5s linear infinite;
-}
-@keyframes slidebg {
-  to {
-      background-position: 80vw;
-      transform: translate3d(0, 0, 0);
-  }
-}
-.prau img.link-image {
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-}
+.prau .name,
 .prau .wp-mylinks-credits,
 .prau .wp-mylinks-credits a {
-  color: #fff;
+	color: #fff;
 }
+
+.prau .mylinks,
+.prau .wp-mylinks-credits {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 500px;
+	width: 100%;
+}
+
+.prau .avatar,
+.prau .description {
+	margin-bottom: 1.4rem;
+	text-align: center;
+}
+
+.prau img.mylinks-social-icons {
+	box-shadow: 0 20px 25px 0 rgb(0 0 0 / 0.15);
+}
+
+.prau .button {
+	margin-bottom: 0.66rem;
+	color: #273d3b;
+	background-color: #fff;
+	border: 2px solid #fff;
+	border-radius: 2px;
+}
+
+.prau .button:hover {
+	color: #fff;
+	background: linear-gradient(to right, #b31217, #e52d27);
+	border: 2px solid #fff;
+	animation: slidebg 5s linear infinite;
+}
+
+.prau img.link-image {
+	border-radius: 2px;
+}
+
 .prau .mylink-card,
 .prau .youtube-player,
 .prau .media-embed iframe {
-  border-radius: 2px;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
-  margin-bottom: 0.66rem;
+	margin-bottom: 0.66rem;
+	border-radius: 2px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 10. Theme: Merbabu
+ * -------------------------------------------------------------------------- */
+
 .merbabu {
-  background: #22c1c3;
-  background: -moz-linear-gradient(0deg, #22c1c3 0, #fdbb2d 100%);
-  background: -webkit-linear-gradient(0deg, #22c1c3 0, #fdbb2d 100%);
-  background: linear-gradient(0deg, #22c1c3 0, #fdbb2d 100%);
+	background: linear-gradient(0deg, #22c1c3 0, #fdbb2d 100%);
 }
+
 .merbabu .description,
-.merbabu .name {
-  color: #fff;
-}
-.merbabu img.mylinks-social-icons {
-  box-shadow: 0 20px 25px 0 rgba(0, 0, 0, 0.15);
-}
-.merbabu .button {
-  color: #273d3b;
-  border: 2px solid #fff;
-  background-color: #fff;
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  margin-bottom: 0.66rem;
-  padding: 1rem 0.33rem;
-}
-.merbabu img.link-image {
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-}
-.merbabu .button:hover {
-  background-color: transparent;
-  color: #fff;
-}
+.merbabu .name,
 .merbabu .wp-mylinks-credits,
 .merbabu .wp-mylinks-credits a {
-  color: #fff;
+	color: #fff;
 }
+
+.merbabu img.mylinks-social-icons {
+	box-shadow: 0 20px 25px 0 rgb(0 0 0 / 0.15);
+}
+
+.merbabu .button {
+	margin-bottom: 0.66rem;
+	padding: 1rem 0.33rem;
+	color: #273d3b;
+	background-color: #fff;
+	border: 2px solid #fff;
+	border-radius: 2px;
+}
+
+.merbabu .button:hover {
+	color: #fff;
+	background-color: transparent;
+}
+
+.merbabu img.link-image {
+	border-radius: 2px;
+}
+
 .merbabu .mylink-card,
 .merbabu .youtube-player,
 .merbabu .media-embed iframe {
-  border-radius: 4px;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
-  margin-bottom: 0.66rem;
+	margin-bottom: 0.66rem;
+	border-radius: 4px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 11. Theme: Sindoro
+ * -------------------------------------------------------------------------- */
+
 .sindoro {
-  background: #16222a;
-  background: -webkit-linear-gradient(to bottom, #3a6073, #16222a);
-  background: linear-gradient(to bottom, #3a6073, #16222a);
+	background: linear-gradient(to bottom, #3a6073, #16222a);
 }
+
 .sindoro .description,
-.sindoro .name {
-  color: #fff;
-}
-.sindoro img.mylinks-social-icons {
-  box-shadow: 0 20px 25px 0 rgba(0, 0, 0, 0.15);
-}
-.sindoro .button {
-  color: #273d3b;
-  border: 2px solid #fff;
-  background-color: #fff;
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  margin-bottom: 0.66rem;
-  padding: 1rem 0.33rem;
-}
-.sindoro .button:hover {
-  background-color: transparent;
-  color: #fff;
-}
+.sindoro .name,
 .sindoro .wp-mylinks-credits,
 .sindoro .wp-mylinks-credits a {
-  color: #fff;
+	color: #fff;
 }
+
+.sindoro img.mylinks-social-icons {
+	box-shadow: 0 20px 25px 0 rgb(0 0 0 / 0.15);
+}
+
+.sindoro .button {
+	margin-bottom: 0.66rem;
+	padding: 1rem 0.33rem;
+	color: #273d3b;
+	background-color: #fff;
+	border: 2px solid #fff;
+	border-radius: 2px;
+}
+
+.sindoro .button:hover {
+	color: #fff;
+	background-color: transparent;
+}
+
 .sindoro .mylink-card,
 .sindoro .youtube-player,
 .sindoro .media-embed iframe {
-  border-radius: 4px;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
-  margin-bottom: 0.66rem;
+	margin-bottom: 0.66rem;
+	border-radius: 4px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 12. Theme: Cikuray
+ * -------------------------------------------------------------------------- */
+
 .cikuray {
-  background-image: linear-gradient(to bottom, #00002c, #010734, #000e3c, #001344, #00164c);
+	background-image: linear-gradient(to bottom, #00002c, #010734, #000e3c, #001344, #00164c);
 }
+
 .cikuray .description,
-.cikuray .name {
-  color: #fff;
-}
-.cikuray .button {
-  color: #fff;
-  background-color: #000032;
-  border: 2px solid #fff;
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-  margin-bottom: 0.66rem;
-  padding: 1rem 0.33rem;
-}
-.cikuray img.link-image {
-  border-radius: 40px;
-}
-.cikuray .button:hover {
-  background-color: #fff;
-  color: #000032;
-}
+.cikuray .name,
 .cikuray .wp-mylinks-credits,
 .cikuray .wp-mylinks-credits a {
-  color: #fff;
+	color: #fff;
 }
+
+.cikuray .button {
+	margin-bottom: 0.66rem;
+	padding: 1rem 0.33rem;
+	color: #fff;
+	background-color: #000032;
+	border: 2px solid #fff;
+	border-radius: 40px;
+}
+
+.cikuray img.link-image {
+	border-radius: 40px;
+}
+
+.cikuray .button:hover {
+	color: #000032;
+	background-color: #fff;
+}
+
 .cikuray .mylink-card,
 .cikuray .youtube-player,
 .cikuray .media-embed iframe {
-  background: transparent;
-  border: 2px solid #fff;
-  border-radius: 30px;
-  -webkit-border-radius: 30px;
-  -moz-border-radius: 30px;
-  margin-bottom: 0.66rem;
+	margin-bottom: 0.66rem;
+	background: transparent;
+	border: 2px solid #fff;
+	border-radius: 30px;
 }
+
+/* -----------------------------------------------------------------------------
+ * 13. Theme: Ciremai
+ * -------------------------------------------------------------------------- */
+
 .ciremai {
-  background-image: linear-gradient(to top, #1d686e, #366c6c, #48706b, #58746d, #667770, #6b7a74, #6f7e79, #74817d, #728582, #6f8989, #6d8d90, #6b9099);
+	background-image: linear-gradient(
+		to top,
+		#1d686e, #366c6c, #48706b, #58746d, #667770, #6b7a74,
+		#6f7e79, #74817d, #728582, #6f8989, #6d8d90, #6b9099
+	);
 }
+
 .ciremai .description,
-.ciremai .name {
-  color: #fff;
-}
-.ciremai .button {
-  color: #273d3b;
-  border: 2px solid #fff;
-  background-color: #fff;
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  margin-bottom: 0.66rem;
-  padding: 1rem 0.33rem;
-}
-.ciremai .button:hover {
-  background-color: #000032;
-  color: #fff;
-  border: 2px solid #fff;
-}
+.ciremai .name,
 .ciremai .wp-mylinks-credits,
 .ciremai .wp-mylinks-credits a {
-  color: #fff;
+	color: #fff;
 }
+
+.ciremai .button {
+	margin-bottom: 0.66rem;
+	padding: 1rem 0.33rem;
+	color: #273d3b;
+	background-color: #fff;
+	border: 2px solid #fff;
+	border-radius: 2px;
+}
+
+.ciremai .button:hover {
+	color: #fff;
+	background-color: #000032;
+	border: 2px solid #fff;
+}
+
 .ciremai .mylink-card,
 .ciremai .youtube-player,
 .ciremai .media-embed iframe {
-  background: transparent;
-  border: 2px solid #fff;
-  border-radius: 4px;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  margin-bottom: 0.66rem;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
+	margin-bottom: 0.66rem;
+	background: transparent;
+	border: 2px solid #fff;
+	border-radius: 4px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 14. Theme: Bromo
+ * -------------------------------------------------------------------------- */
+
 .bromo {
-  background-color: #6284ff;
-  background-image: linear-gradient(180deg, #6284ff 5%, red 89%);
+	background-color: #6284ff;
+	background-image: linear-gradient(180deg, #6284ff 5%, #f00 89%);
 }
+
 .bromo .description,
-.bromo .name {
-  color: #fff;
-}
-.bromo img.link-image {
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-}
-.bromo .button {
-  color: #273d3b;
-  border: 2px solid #fff;
-  background-color: #fff;
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-  margin-bottom: 0.66rem;
-  padding: 1rem 0.33rem;
-}
-.bromo .button:hover {
-  border: 2px solid red;
-  color: #fff;
-  background: red;
-  background: -webkit-linear-gradient(to left, red, #6284ff);
-  background: linear-gradient(to left, red, #6284ff);
-  animation: slidebg 5s linear infinite;
-}
-@keyframes slidebg {
-  to {
-      background-position: 80vw;
-      transform: translate3d(0, 0, 0);
-  }
-}
+.bromo .name,
 .bromo .wp-mylinks-credits,
 .bromo .wp-mylinks-credits a {
-  color: #fff;
+	color: #fff;
 }
+
+.bromo img.link-image {
+	border-radius: 40px;
+}
+
+.bromo .button {
+	margin-bottom: 0.66rem;
+	padding: 1rem 0.33rem;
+	color: #273d3b;
+	background-color: #fff;
+	border: 2px solid #fff;
+	border-radius: 40px;
+}
+
+.bromo .button:hover {
+	color: #fff;
+	background: linear-gradient(to left, #f00, #6284ff);
+	border: 2px solid #f00;
+	animation: slidebg 5s linear infinite;
+}
+
 .bromo .mylink-card,
 .bromo .youtube-player,
 .bromo .media-embed iframe {
-  border-radius: 30px;
-  -webkit-border-radius: 30px;
-  -moz-border-radius: 30px;
-  margin-bottom: 0.66rem;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
+	margin-bottom: 0.66rem;
+	border-radius: 30px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 15. Theme: Slamet
+ * -------------------------------------------------------------------------- */
+
 .slamet {
-  background: #5691c8;
-  background: -webkit-linear-gradient(to top, #457fca, #5691c8);
-  background: linear-gradient(to top, #457fca, #5691c8);
+	background: linear-gradient(to top, #457fca, #5691c8);
 }
+
 .slamet .description,
-.slamet .name {
-  color: #fff;
-}
-.slamet .mylinks,
-.slamet .wp-mylinks-credits {
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 500px;
-  width: 100%;
-}
-.slamet .avatar,
-.slamet .description {
-  margin-bottom: 1.4rem;
-  text-align: center;
-}
-.slamet .button {
-  color: #fff;
-  background: #084177;
-  border: 2px solid #fff;
-  border-radius: 4px;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-}
-.slamet .button:hover {
-  background-color: #fff;
-  color: #273d3b;
-  border: 2px solid #fff;
-}
-.slamet img.link-image {
-  border-radius: 4px;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-}
+.slamet .name,
 .slamet .wp-mylinks-credits,
 .slamet .wp-mylinks-credits a {
-  color: #fff;
+	color: #fff;
 }
+
+.slamet .mylinks,
+.slamet .wp-mylinks-credits {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 500px;
+	width: 100%;
+}
+
+.slamet .avatar,
+.slamet .description {
+	margin-bottom: 1.4rem;
+	text-align: center;
+}
+
+.slamet .button {
+	color: #fff;
+	background: #084177;
+	border: 2px solid #fff;
+	border-radius: 4px;
+}
+
+.slamet .button:hover {
+	color: #273d3b;
+	background-color: #fff;
+	border: 2px solid #fff;
+}
+
+.slamet img.link-image {
+	border-radius: 4px;
+}
+
 .slamet .mylink-card,
 .slamet .youtube-player,
 .slamet .media-embed iframe {
-  border: 2px solid #fff;
-  border-radius: 4px;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  margin-bottom: 1rem;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
+	margin-bottom: 1rem;
+	border: 2px solid #fff;
+	border-radius: 4px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 16. Theme: Krakatau
+ * -------------------------------------------------------------------------- */
+
 .krakatau {
-  background-color: #000032;
+	background-color: #000032;
 }
+
 .krakatau .description,
-.krakatau .name {
-  color: #fff;
-}
-.krakatau img.link-image {
-  border-radius: 40px !important;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-}
-.krakatau .button {
-  display: block;
-  color: #fff;
-  border: 2px solid #1c1c5e;
-  border-radius: 40px !important;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-  background-color: #1c1c5e;
-}
-.krakatau .button:hover {
-  background: #cc5333;
-  background: -webkit-linear-gradient(to left, #23074d, #cc5333);
-  background: linear-gradient(to left, #23074d, #cc5333);
-  animation: slidebg 5s linear infinite;
-  border: 2px solid #23074d;
-}
-@keyframes slidebg {
-  to {
-      background-position: 80vw;
-      transform: translate3d(0, 0, 0);
-  }
-}
+.krakatau .name,
 .krakatau .wp-mylinks-credits,
 .krakatau .wp-mylinks-credits a {
-  color: #fff;
+	color: #fff;
 }
+
+.krakatau img.link-image {
+	border-radius: 40px !important;
+}
+
+.krakatau .button {
+	display: block;
+	color: #fff;
+	background-color: #1c1c5e;
+	border: 2px solid #1c1c5e;
+	border-radius: 40px !important;
+}
+
+.krakatau .button:hover {
+	background: linear-gradient(to left, #23074d, #cc5333);
+	border: 2px solid #23074d;
+	animation: slidebg 5s linear infinite;
+}
+
 .krakatau .mylink-card,
 .krakatau .youtube-player,
 .krakatau .media-embed iframe {
-  border-radius: 30px;
-  -webkit-border-radius: 30px;
-  -moz-border-radius: 30px;
-  margin-bottom: 1rem;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
+	margin-bottom: 1rem;
+	border-radius: 30px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 17. Theme: Kopi Hitam
+ * -------------------------------------------------------------------------- */
+
 .kopi-hitam {
-  background-color: #212121;
+	background-color: #212121;
 }
+
 .kopi-hitam .description,
-.kopi-hitam .name {
-  color: #fff;
-}
-.kopi-hitam .button {
-  color: #fff;
-  border: 2px solid #3b2f2f;
-  background-color: #3b2f2f;
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-}
-.kopi-hitam .button:hover {
-  background-color: transparent;
-  color: #fff;
-  border: 2px solid #212121;
-}
-.kopi-hitam img.link-image {
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-}
+.kopi-hitam .name,
 .kopi-hitam .wp-mylinks-credits,
 .kopi-hitam .wp-mylinks-credits a {
-  color: #fff;
+	color: #fff;
 }
+
+.kopi-hitam .button {
+	color: #fff;
+	background-color: #3b2f2f;
+	border: 2px solid #3b2f2f;
+	border-radius: 40px;
+}
+
+.kopi-hitam .button:hover {
+	color: #fff;
+	background-color: transparent;
+	border: 2px solid #212121;
+}
+
+.kopi-hitam img.link-image {
+	border-radius: 40px;
+}
+
 .kopi-hitam .mylink-card,
 .kopi-hitam .youtube-player,
 .kopi-hitam .media-embed iframe {
-  border-radius: 30px;
-  -webkit-border-radius: 30px;
-  -moz-border-radius: 30px;
-  margin-bottom: 1rem;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
+	margin-bottom: 1rem;
+	border-radius: 30px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 18. Theme: Kopi Susu
+ * -------------------------------------------------------------------------- */
+
 .kopi-susu {
-  background-color: #ecdcc2;
+	background-color: #ecdcc2;
 }
+
 .kopi-susu .description,
-.kopi-susu .name {
-  color: #000032;
-}
-.kopi-susu img.link-image {
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-}
-.kopi-susu .button {
-  color: #fff;
-  border: 2px solid #6f4e37;
-  background-color: #6f4e37;
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-}
-.kopi-susu .button:hover {
-  background-color: transparent;
-  color: #6f4e37;
-}
+.kopi-susu .name,
 .kopi-susu .wp-mylinks-credits,
 .kopi-susu .wp-mylinks-credits a {
-  color: #000032;
+	color: #000032;
 }
+
+.kopi-susu img.link-image {
+	border-radius: 40px;
+}
+
+.kopi-susu .button {
+	color: #fff;
+	background-color: #6f4e37;
+	border: 2px solid #6f4e37;
+	border-radius: 40px;
+}
+
+.kopi-susu .button:hover {
+	color: #6f4e37;
+	background-color: transparent;
+}
+
 .kopi-susu .mylink-card,
 .kopi-susu .youtube-player,
 .kopi-susu .media-embed iframe {
-  border-radius: 30px;
-  -webkit-border-radius: 30px;
-  -moz-border-radius: 30px;
-  margin-bottom: 1rem;
-  box-shadow: 0 8px 5px -5px rgb(0 0 0 / 40%);
+	margin-bottom: 1rem;
+	border-radius: 30px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 19. Theme: Polos
+ * -------------------------------------------------------------------------- */
+
 .polos {
-  background-color: #fff;
+	background-color: #fff;
 }
+
 .polos img.link-image {
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
+	border-radius: 40px;
 }
+
 .polos .button {
-  background: #fff;
-  border: 2px solid #f5f5f5;
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-  color: #000032;
-  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.3);
+	color: #000032;
+	background: #fff;
+	border: 2px solid #f5f5f5;
+	border-radius: 40px;
+	box-shadow: 0 5px 5px -3px rgb(0 0 0 / 0.3);
 }
+
 .polos .button:hover {
-  box-shadow: 0 8px 5px -5px rgba(0, 0, 0, 0.4);
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
 .polos .mylink-card,
 .polos .youtube-player,
 .polos .media-embed iframe {
-  border-radius: 30px;
-  -webkit-border-radius: 30px;
-  -moz-border-radius: 30px;
-  margin-bottom: 1rem;
-  box-shadow: 0 5px 5px -3px rgb(0 0 0 / 30%);
+	margin-bottom: 1rem;
+	border-radius: 30px;
+	box-shadow: 0 5px 5px -3px rgb(0 0 0 / 0.3);
 }
+
+/* -----------------------------------------------------------------------------
+ * 20. Theme: Datar
+ * -------------------------------------------------------------------------- */
+
 .datar {
-  background-color: #fff;
+	background-color: #fff;
 }
+
 .datar .button {
-  background: #fff;
-  border: 2px solid #f9f9f9;
-  border-radius: 0;
-  -webkit-border-radius: 0px;
-  -moz-border-radius: 0;
-  color: #000032;
-  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.3);
+	color: #000032;
+	background: #fff;
+	border: 2px solid #f9f9f9;
+	border-radius: 0;
+	box-shadow: 0 5px 5px -3px rgb(0 0 0 / 0.3);
 }
+
 .datar .button:hover,
 .datar .mylink-card:hover,
 .datar .youtube-player:hover,
 .datar .media-embed iframe:hover {
-  box-shadow: 0 8px 5px -5px rgba(0, 0, 0, 0.4);
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
+	border-radius: 2px;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
 .datar .mylink-card,
 .datar .youtube-player,
 .datar .media-embed iframe {
-  border-radius: 0;
-  -webkit-border-radius: 0px;
-  -moz-border-radius: 0;
-  margin-bottom: 1rem;
-  box-shadow: 0 5px 5px -3px rgb(0 0 0 / 30%);
+	margin-bottom: 1rem;
+	border-radius: 0;
+	box-shadow: 0 5px 5px -3px rgb(0 0 0 / 0.3);
 }
+
+/* -----------------------------------------------------------------------------
+ * 21. Theme: Pastel
+ * -------------------------------------------------------------------------- */
+
 .pastel {
-  background-color: #fde7f0;
+	background-color: #fde7f0;
 }
+
 .pastel img.link-image {
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
+	border-radius: 2px;
 }
+
 .pastel .button {
-  background: #d291bc;
-  color: #fff;
-  border: 2px solid #d291bc;
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.3);
+	color: #fff;
+	background: #d291bc;
+	border: 2px solid #d291bc;
+	border-radius: 2px;
+	box-shadow: 0 5px 5px -3px rgb(0 0 0 / 0.3);
 }
+
 .pastel .button:hover {
-  background: #957dad;
-  border: 2px solid #957dad;
-  box-shadow: 0 8px 5px -5px rgba(0, 0, 0, 0.4);
+	background: #957dad;
+	border: 2px solid #957dad;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
 .pastel .mylink-card,
 .pastel .youtube-player,
 .pastel .media-embed iframe {
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  margin-bottom: 1rem;
-  box-shadow: 0 5px 5px -3px rgb(0 0 0 / 30%);
+	margin-bottom: 1rem;
+	border-radius: 2px;
+	box-shadow: 0 5px 5px -3px rgb(0 0 0 / 0.3);
 }
+
 .pastel .mylink-card:hover,
 .pastel .youtube-player:hover,
 .pastel .media-embed iframe:hover {
-  box-shadow: 0 8px 5px -5px rgba(0, 0, 0, 0.4);
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 22. Theme: Klepon Viral
+ * -------------------------------------------------------------------------- */
+
 .klepon {
-  background-color: #fff;
+	background-color: #fff;
 }
+
 .klepon img.link-image {
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
+	border-radius: 40px;
 }
+
 .klepon .button {
-  background: #64e291;
-  border: 2px solid #64e291;
-  border-radius: 40px;
-  -webkit-border-radius: 40px;
-  -moz-border-radius: 40px;
-  color: #fff;
-  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.3);
+	color: #fff;
+	background: #64e291;
+	border: 2px solid #64e291;
+	border-radius: 40px;
+	box-shadow: 0 5px 5px -3px rgb(0 0 0 / 0.3);
 }
+
 .klepon .button:hover {
-  background: #c17a48;
-  border: 2px solid #c17a48;
-  box-shadow: 0 8px 5px -5px rgba(0, 0, 0, 0.4);
+	background: #c17a48;
+	border: 2px solid #c17a48;
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
 .klepon .mylink-card,
 .klepon .youtube-player,
 .klepon .media-embed iframe {
-  border-radius: 30px;
-  -webkit-border-radius: 30px;
-  -moz-border-radius: 30px;
-  margin-bottom: 1rem;
-  box-shadow: 0 5px 5px -3px rgb(0 0 0 / 30%);
+	margin-bottom: 1rem;
+	border-radius: 30px;
+	box-shadow: 0 5px 5px -3px rgb(0 0 0 / 0.3);
 }
+
 .klepon .mylink-card:hover,
 .klepon .youtube-player:hover,
 .klepon .media-embed iframe:hover {
-  box-shadow: 0 8px 5px -5px rgba(0, 0, 0, 0.4);
+	box-shadow: 0 8px 5px -5px rgb(0 0 0 / 0.4);
 }
+
+/* -----------------------------------------------------------------------------
+ * 23. Card layout
+ * -------------------------------------------------------------------------- */
+
 .card-wrapper {
-  max-width: 1200px;
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: center;
-  margin-left: 25px;
-  margin-right: 25px;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: center;
+	max-width: 1200px;
+	margin-left: 25px;
+	margin-right: 25px;
 }
+
 .mylink-card {
-  border: 0 solid #0ff;
-  margin: 0;
-  position: relative;
-  height: 0;
-  padding-bottom: 56.25%;
-  overflow: hidden;
-  flex: 1;
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-  -webkit-transform: translate3d(0, 0, 0);
-  -moz-transform: translate3d(0, 0, 0);
-  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.75));
+	position: relative;
+	flex: 1;
+	height: 0;
+	margin: 0;
+	padding-bottom: 56.25%;
+	overflow: hidden;
+	background-image: linear-gradient(180deg, rgb(0 0 0 / 0) 40%, rgb(0 0 0 / 0.75));
+	border: 0 solid #0ff;
+	transform: translate3d(0, 0, 0);
+	backface-visibility: hidden;
 }
+
 @media (min-width: 900px) {
-  .mylink-card {
-      height: 0;
-  }
+
+	.mylink-card {
+		height: 0;
+	}
 }
+
 .mylink-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0) linear-gradient(to bottom, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.7) 80%);
-  z-index: 0;
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	background: rgb(0 0 0 / 0) linear-gradient(to bottom, rgb(0 0 0 / 0) 50%, rgb(0 0 0 / 0.7) 80%);
 }
+
 .mylink-card-link {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
 }
+
 .mylink-card-background {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  transition: transform 3s ease;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  position: relative;
-  z-index: -1;
+	position: relative;
+	z-index: -1;
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 3s ease;
+	backface-visibility: hidden;
 }
+
 .mylink-card-title-wrapper {
-  position: absolute;
-  padding: 1rem;
-  color: #fff;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.75));
-  transition: background-color 1.5s ease;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 1rem;
+	color: #fff;
+	background-image: linear-gradient(180deg, rgb(0 0 0 / 0) 40%, rgb(0 0 0 / 0.75));
+	transition: background-color 1.5s ease;
 }
+
 .mylink-card-title {
-  transition: color 1s ease;
-  margin-bottom: 0.5rem;
+	margin-bottom: 0.5rem;
+	transition: color 1s ease;
 }
+
 h2.mylink-card-title {
-  text-align: center;
+	text-align: center;
 }
+
 @media (min-width: 900px) {
-  .mylink-card:hover .mylink-card-title-wrapper {
-      background-color: rgba(0, 0, 0, 0.6);
-  }
-  .mylink-card:hover .mylink-card-title {
-      color: #fff;
-  }
-  .mylink-card:hover .mylink-card-background {
-      transform: scale(1.2);
-      z-index: -1;
-  }
+
+	.mylink-card:hover .mylink-card-title-wrapper {
+		background-color: rgb(0 0 0 / 0.6);
+	}
+
+	.mylink-card:hover .mylink-card-title {
+		color: #fff;
+	}
+
+	.mylink-card:hover .mylink-card-background {
+		z-index: -1;
+		transform: scale(1.2);
+	}
+}
+
+
+/* -----------------------------------------------------------------------------
+ * Accessibility helpers (1.0.8)
+ * -------------------------------------------------------------------------- */
+
+/* Visually hidden, but available to screen readers. WCAG 2.2 compliant. */
+.screen-reader-text {
+	position: absolute !important;
+	clip: rect(1px, 1px, 1px, 1px);
+	clip-path: inset(50%);
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	word-wrap: normal !important;
+}
+
+/* Make the skip link visible when focused, anchored to the top of the page. */
+.screen-reader-text:focus {
+	position: fixed !important;
+	top: 8px;
+	left: 8px;
+	z-index: 100000;
+	clip: auto !important;
+	clip-path: none;
+	width: auto;
+	height: auto;
+	margin: 0;
+	padding: 12px 18px;
+	background: #fff;
+	color: #000032;
+	border: 2px solid #000032;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	white-space: normal;
+}
+
+/* When skipped to, the main element gets focus — suppress its outline since
+   the skip link already gave the user the visual cue. */
+.mylinks[tabindex="-1"]:focus {
+	outline: none;
 }

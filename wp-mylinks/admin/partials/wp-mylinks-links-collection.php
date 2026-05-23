@@ -109,8 +109,8 @@ function wp_mylinks_post_type_collection_submenu()
 {
     add_submenu_page(
         'edit.php?post_type=mylink',
-        'Collection',
-        'Collection',
+        __('Collection', 'wp-mylinks'),
+        __('Collection', 'wp-mylinks'),
         'manage_options',
         'edit.php?post_type=mylinks-collection'
     );

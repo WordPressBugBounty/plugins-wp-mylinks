@@ -5,6 +5,14 @@
     margin: 0 auto 40px;
     max-width: 680px;
 }
+.post-type-mylink .feature-section {
+    margin: 25px auto!important;
+}
+.post-type-mylink .feature-section h4 {
+    margin: 1.25em 0 0.6em;
+    font-size: 1.1em;
+    line-height: 1.5;
+}
 .embed-container {
     height: 0;
     max-width: 100%;
@@ -191,4 +199,13 @@ input.mylinks-selected-url {
 }
 .cmb-type-pw-multiselect .select2-selection__choice {
     cursor: move !important;
+}
+
+/* Footer thank-you on WP MyLinks admin screens */
+.wp-mylinks-footer-thankyou a {
+    text-decoration: none;
+    color: #f0b400;
+}
+.wp-mylinks-footer-thankyou a:hover {
+    color: #e1a000;
 }

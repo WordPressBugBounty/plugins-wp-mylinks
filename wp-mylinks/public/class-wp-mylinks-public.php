@@ -10,94 +10,56 @@
  * @subpackage Wp_Mylinks/public
  */
 
+if (!defined('ABSPATH')) {
+	exit;
+}
+
 /**
  * The public-facing functionality of the plugin.
  *
- * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the public-facing stylesheet and JavaScript.
+ * The mylink template is fully standalone and bypasses the active theme entirely
+ * (see public/partials/wp-mylinks-base-template.php). It enqueues its own
+ * assets inline. These methods are kept as orchestration points in case future
+ * features need to register additional public assets at wp_enqueue_scripts.
  *
  * @package    Wp_Mylinks
  * @subpackage Wp_Mylinks/public
  * @author     Walter Pinem <hello@walterpinem.me>
  */
-class Wp_Mylinks_Public {
+class Wp_Mylinks_Public
+{
 
 	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
+	 * @var string
 	 */
 	private $plugin_name;
 
 	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @var string
 	 */
 	private $version;
 
-	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of the plugin.
-	 * @param      string    $version    The version of this plugin.
-	 */
-	public function __construct( $plugin_name, $version ) {
-
+	public function __construct($plugin_name, $version)
+	{
 		$this->plugin_name = $plugin_name;
-		$this->version = $version;
-
+		$this->version     = $version;
 	}
 
 	/**
-	 * Register the stylesheets for the public-facing side of the site.
-	 *
-	 * @since    1.0.0
+	 * Reserved hook for future public-side stylesheet enqueueing. The mylink
+	 * template enqueues its own assets directly.
 	 */
-	public function enqueue_styles() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Wp_Mylinks_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Wp_Mylinks_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
-		// We'll use it later
-		// wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/wp-mylinks-public.min.css', array(), $this->version, 'all' );
+	public function enqueue_styles()
+	{
+		// Intentionally empty — see class docblock.
 	}
 
 	/**
-	 * Register the JavaScript for the public-facing side of the site.
-	 *
-	 * @since    1.0.0
+	 * Reserved hook for future public-side script enqueueing. The mylink template
+	 * enqueues its own assets directly.
 	 */
-	public function enqueue_scripts() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Wp_Mylinks_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Wp_Mylinks_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-		// We'll use it later
-		// wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/wp-mylinks-public.js', array( 'jquery' ), $this->version, false );
-
+	public function enqueue_scripts()
+	{
+		// Intentionally empty — see class docblock.
 	}
-
 }
