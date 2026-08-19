@@ -50,17 +50,19 @@
 		frame.open();
 	}
 
+	var l10n = window.wpMylinksAdmin || {};
+
 	$(function () {
 		// Original favicon uploader (unchanged contract).
 		$('#upload_image_button').on('click', function (event) {
 			event.preventDefault();
-			openMediaFrame($(this), 'Choose Favicon', '#mylinks_upload_favicon');
+			openMediaFrame($(this), l10n.chooseFavicon || 'Choose Favicon', '#mylinks_upload_favicon');
 		});
 
 		// New og:image uploader (1.0.8+).
 		$('#wp_mylinks_og_image_button').on('click', function (event) {
 			event.preventDefault();
-			openMediaFrame($(this), 'Choose Share Image', '#wp_mylinks_og_image');
+			openMediaFrame($(this), l10n.chooseShareImage || 'Choose Share Image', '#wp_mylinks_og_image');
 		});
 	});
 })(jQuery);

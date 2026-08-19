@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage Wp_Mylinks/includes
  * @author     Walter Pinem <hello@walterpinem.me>
  */
-class Wp_Mylinks_i18n {
+class Wp_Mylinks_I18n {
 
 
 	/**
@@ -51,9 +51,5 @@ class Wp_Mylinks_i18n {
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);
-
 	}
-
-
-
 }

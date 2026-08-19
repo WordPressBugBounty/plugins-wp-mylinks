@@ -1,0 +1,67 @@
+/**
+ * WP MyLinks admin design tokens.
+ *
+ * The Online Store Kit house palette (HOUSE-STANDARD.md Part 1), copied
+ * verbatim from the canonical tokens file with only the prefix renamed:
+ * the hero yellow (#ffd957) as the accent and the hero text colour (#262e33)
+ * for anything the user acts on, with warm neutrals so the greys sit with
+ * the yellow instead of fighting it.
+ *
+ * Contrast note: the brand yellow is a background and decoration colour only.
+ * Text and icons use --wml-brand-deep (a bronzed gold) or ink, because the
+ * yellow itself sits around 1.5:1 on white and is unreadable as body text.
+ *
+ * Exposed as custom properties so the palette can be re-themed at runtime —
+ * including by a user who wants WP MyLinks to match their own admin.
+ *
+ * @package Wp_Mylinks
+ * @since 1.1.0
+ */
+
+:root {
+  /* Brand ------------------------------------------------------------- */
+  --wml-brand: #ffd957;
+  --wml-brand-strong: #f7c531;
+  --wml-brand-deep: #a97c07; /* Icon / emphasis gold — legible on white. */
+  --wml-brand-soft: #fff8e2;
+  --wml-brand-tint: #fffcf0;
+  --wml-brand-ring: rgba(247, 197, 49, 0.40);
+
+  /* Ink and neutrals -------------------------------------------------- */
+  --wml-ink: #262e33;
+  --wml-ink-hover: #364149;
+  --wml-text: #262e33;
+  --wml-muted: #6b7280;
+  --wml-faint: #9ca3af;
+  --wml-line: #e7e4dc;
+  --wml-line-strong: #d5d1c6;
+  --wml-surface: #ffffff;
+  --wml-canvas: #faf8f4;
+  --wml-canvas-soft: #f4f1ea;
+
+  /* Status ------------------------------------------------------------ */
+  --wml-success: #2f9e79;
+  --wml-success-soft: #e8f6f1;
+  --wml-success-line: #bfe5d8;
+  --wml-danger: #d9482c;
+  --wml-danger-soft: #fdeee9;
+  --wml-danger-line: #f6c9bd;
+  --wml-warning: #c47f04;
+  --wml-warning-soft: #fdf4e3;
+  --wml-warning-line: #f3ddab;
+  --wml-info: #2f6fed;
+  --wml-info-soft: #eef3fe;
+  --wml-info-line: #cbdcfb;
+
+  /* Composites -------------------------------------------------------- */
+  --wml-gradient-brand: linear-gradient(135deg, #ffd957 0%, #f7bd2e 100%);
+  --wml-gradient-ink: linear-gradient(135deg, #313b41 0%, #1c2327 100%);
+
+  --wml-shadow-sm: 0 1px 3px rgba(38, 46, 51, 0.08);
+  --wml-shadow-md: 0 4px 16px rgba(38, 46, 51, 0.09);
+  --wml-shadow-lg: 0 12px 30px rgba(169, 124, 7, 0.20);
+  --wml-shadow-ink: 0 4px 14px rgba(38, 46, 51, 0.24);
+
+  --wml-radius: 12px;
+  --wml-radius-sm: 8px;
+}

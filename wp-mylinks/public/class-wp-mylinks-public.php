@@ -10,7 +10,7 @@
  * @subpackage Wp_Mylinks/public
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined('ABSPATH') ) {
 	exit;
 }
 
@@ -26,8 +26,8 @@ if (!defined('ABSPATH')) {
  * @subpackage Wp_Mylinks/public
  * @author     Walter Pinem <hello@walterpinem.me>
  */
-class Wp_Mylinks_Public
-{
+class Wp_Mylinks_Public {
+
 
 	/**
 	 * @var string
@@ -39,8 +39,7 @@ class Wp_Mylinks_Public
 	 */
 	private $version;
 
-	public function __construct($plugin_name, $version)
-	{
+	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 	}
@@ -49,8 +48,7 @@ class Wp_Mylinks_Public
 	 * Reserved hook for future public-side stylesheet enqueueing. The mylink
 	 * template enqueues its own assets directly.
 	 */
-	public function enqueue_styles()
-	{
+	public function enqueue_styles() {
 		// Intentionally empty — see class docblock.
 	}
 
@@ -58,8 +56,7 @@ class Wp_Mylinks_Public
 	 * Reserved hook for future public-side script enqueueing. The mylink template
 	 * enqueues its own assets directly.
 	 */
-	public function enqueue_scripts()
-	{
+	public function enqueue_scripts() {
 		// Intentionally empty — see class docblock.
 	}
 }

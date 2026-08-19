@@ -26,6 +26,31 @@ html {
 	overflow-x: hidden;
 }
 
+/* Fill at least the viewport and never tile the theme background. Themes set
+ * their gradient/color with the `background` shorthand on the theme class
+ * (e.g. .prau), which resets repeat/size to their defaults; a short page then
+ * leaves the body smaller than the canvas and the gradient tiles, showing a
+ * seam. The higher-specificity `body.mylinks-body` selector wins over that
+ * shorthand, so this applies to every theme. `min-height` is also safe from
+ * the shorthand. dvh refines the vh fallback where supported (mobile chrome).
+ *
+ * The flex column plus a growing main (below) keeps the footer at the bottom
+ * of the viewport when a page has few links, instead of stranding it mid-page
+ * over the tall background. Tall pages have no free space to distribute, so
+ * the footer keeps its usual spacing after the content. */
+body.mylinks-body {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	min-height: 100dvh;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.mylinks-body .mylinks {
+	flex: 1 0 auto;
+}
+
 a {
 	text-decoration: none;
 }
@@ -211,6 +236,147 @@ a {
 .media-embed iframe {
 	width: 100%;
 	max-width: 100%;
+}
+
+/* Pinterest's oEmbed iframe is fixed-size (450x774), sized by Pinterest for
+ * its own content at exactly 450px wide. Stretching it to the column distorts
+ * the card, but `width: auto` collapses an iframe to the 300px replaced-element
+ * default, which is worse. Pin it to its designed 450px width, centered, and
+ * cap it to the column so it still shrinks on narrow screens. */
+.mylinks-body .media-embed iframe[src*="pinterest."] {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	width: 450px;
+	max-width: 100%;
+}
+
+/* -----------------------------------------------------------------------------
+ * 5b. Section headings, search bar, HTML blocks (1.1.0)
+ *
+ * Theme-agnostic: colors inherit from the active theme's body text so these
+ * read on light and dark themes alike, and no theme rule targets these
+ * classes, so existing themes are untouched.
+ * -------------------------------------------------------------------------- */
+
+.mylinks-body .link-heading {
+	margin: 22px 25px 6px;
+	text-align: center;
+}
+
+.mylinks-body .link-heading:first-child {
+	margin-top: 0;
+}
+
+.mylinks-body .mylinks-section-heading {
+	color: inherit;
+	font-size: 0.95rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	margin: 0;
+	opacity: 0.85;
+	text-transform: uppercase;
+}
+
+.mylinks-body .mylinks-html-block {
+	margin: 12px 25px;
+	overflow-wrap: anywhere;
+}
+
+.mylinks-body .mylinks-search {
+	margin: 0 25px 16px;
+}
+
+.mylinks-body .mylinks-search__input {
+	background: #fff;
+	border: 1px solid rgba(0, 0, 0, 0.18);
+	border-radius: 999px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+	box-sizing: border-box;
+	color: #1a1a1a;
+	display: block;
+	font: inherit;
+	padding: 11px 18px;
+	width: 100%;
+}
+
+.mylinks-body .mylinks-search__input:focus {
+	border-color: rgba(0, 0, 0, 0.4);
+	outline: 2px solid rgba(0, 0, 0, 0.15);
+	outline-offset: 1px;
+}
+
+.mylinks-body .mylinks-search__empty {
+	color: inherit;
+	font-size: 0.9rem;
+	margin: 10px 0 0;
+	opacity: 0.8;
+	text-align: center;
+}
+
+.mylinks-body .mylinks-social-icon-font {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 26px;
+	line-height: 1;
+	color: inherit;
+}
+
+/*
+ * Per-theme text color for the new elements: they mirror each theme's own
+ * content (description/name) color so they read on dark themes too. Themes
+ * with no explicit color use the default dark text, which suits their light
+ * backgrounds, so only the dark themes need an override here.
+ */
+.merbabu .mylinks-section-heading,
+.merbabu .mylinks-html-block,
+.merbabu .mylinks-search__empty,
+.merbabu .mylinks-social-icon-font,
+.cikuray .mylinks-section-heading,
+.cikuray .mylinks-html-block,
+.cikuray .mylinks-search__empty,
+.cikuray .mylinks-social-icon-font,
+.ciremai .mylinks-section-heading,
+.ciremai .mylinks-html-block,
+.ciremai .mylinks-search__empty,
+.ciremai .mylinks-social-icon-font,
+.slamet .mylinks-section-heading,
+.slamet .mylinks-html-block,
+.slamet .mylinks-search__empty,
+.slamet .mylinks-social-icon-font,
+.papandayan .mylinks-section-heading,
+.papandayan .mylinks-html-block,
+.papandayan .mylinks-search__empty,
+.papandayan .mylinks-social-icon-font,
+.sindoro .mylinks-section-heading,
+.sindoro .mylinks-html-block,
+.sindoro .mylinks-search__empty,
+.sindoro .mylinks-social-icon-font,
+.krakatau .mylinks-section-heading,
+.krakatau .mylinks-html-block,
+.krakatau .mylinks-search__empty,
+.krakatau .mylinks-social-icon-font,
+.bromo .mylinks-section-heading,
+.bromo .mylinks-html-block,
+.bromo .mylinks-search__empty,
+.bromo .mylinks-social-icon-font,
+.prau .mylinks-section-heading,
+.prau .mylinks-html-block,
+.prau .mylinks-search__empty,
+.prau .mylinks-social-icon-font,
+.kopi-hitam .mylinks-section-heading,
+.kopi-hitam .mylinks-html-block,
+.kopi-hitam .mylinks-search__empty,
+.kopi-hitam .mylinks-social-icon-font {
+	color: #fff;
+}
+
+.kopi-susu .mylinks-section-heading,
+.kopi-susu .mylinks-html-block,
+.kopi-susu .mylinks-search__empty,
+.kopi-susu .mylinks-social-icon-font {
+	color: #000032;
 }
 
 /* -----------------------------------------------------------------------------

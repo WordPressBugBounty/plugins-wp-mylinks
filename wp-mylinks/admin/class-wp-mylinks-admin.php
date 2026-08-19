@@ -10,7 +10,7 @@
  * @subpackage Wp_Mylinks/admin
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined('ABSPATH') ) {
 	exit;
 }
 
@@ -24,8 +24,8 @@ if (!defined('ABSPATH')) {
  * @subpackage Wp_Mylinks/admin
  * @author     Walter Pinem <hello@walterpinem.me>
  */
-class Wp_Mylinks_Admin
-{
+class Wp_Mylinks_Admin {
+
 
 	/**
 	 * The ID of this plugin.
@@ -52,8 +52,7 @@ class Wp_Mylinks_Admin
 	 * @param    string $plugin_name The name of this plugin.
 	 * @param    string $version     The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version)
-	{
+	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
 		$this->version     = $version;
 	}
@@ -67,18 +66,60 @@ class Wp_Mylinks_Admin
 	 * @since    1.0.0
 	 * @param    string $hook Current admin page hook suffix.
 	 */
-	public function enqueue_styles($hook = '')
-	{
-		if (!$this->is_plugin_screen($hook)) {
+	public function enqueue_styles( $hook = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- admin_enqueue_scripts passes the hook suffix; screen detection uses get_current_screen().
+		if ( ! $this->is_plugin_screen() ) {
 			return;
 		}
+		// House design tokens + components (1.1.0) load first so the legacy
+		// stylesheet can override during the transition.
+		wp_enqueue_style(
+			'wml-tokens',
+			plugin_dir_url(__FILE__) . 'css/wml-tokens.css',
+			array(),
+			$this->asset_version('css/wml-tokens.css'),
+			'all'
+		);
+		wp_enqueue_style(
+			'wml-components',
+			plugin_dir_url(__FILE__) . 'css/wml-components.css',
+			array( 'wml-tokens' ),
+			$this->asset_version('css/wml-components.css'),
+			'all'
+		);
 		wp_enqueue_style(
 			$this->plugin_name,
 			plugin_dir_url(__FILE__) . 'css/wp-mylinks-admin.min.css',
-			array(),
-			$this->version,
+			array( 'wml-components' ),
+			$this->asset_version('css/wp-mylinks-admin.min.css'),
 			'all'
 		);
+		// Bundled Select2 styles (previously enqueued by the CMB2 field class).
+		wp_enqueue_style(
+			'wml-select2',
+			plugin_dir_url(__FILE__) . 'css/select2.min.css',
+			array(),
+			'4.1.0',
+			'all'
+		);
+		// Core color picker (accent color fields, 1.1.0).
+		wp_enqueue_style('wp-color-picker');
+	}
+
+	/**
+	 * Cache-busting version for a plugin admin asset.
+	 *
+	 * The file's mtime changes on every deploy and every dev edit, so browsers
+	 * can never serve a stale stylesheet or script under an unchanged plugin
+	 * version. Falls back to the plugin version if the file is unreadable.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $relative Path relative to the admin/ directory.
+	 * @return string
+	 */
+	private function asset_version( $relative ) {
+		$mtime = @filemtime(plugin_dir_path(__FILE__) . $relative); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- version fallback below covers failure.
+		return $mtime ? (string) $mtime : $this->version;
 	}
 
 	/**
@@ -90,21 +131,68 @@ class Wp_Mylinks_Admin
 	 * @since    1.0.0
 	 * @param    string $hook Current admin page hook suffix.
 	 */
-	public function enqueue_scripts($hook = '')
-	{
-		if (!$this->is_plugin_screen($hook)) {
+	public function enqueue_scripts( $hook = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- admin_enqueue_scripts passes the hook suffix; screen detection uses get_current_screen().
+		if ( ! $this->is_plugin_screen() ) {
 			return;
 		}
-		// The favicon uploader needs the WP media JS modal.
-		if (function_exists('wp_enqueue_media')) {
+		// The favicon uploader and the file fields need the WP media JS modal.
+		if ( function_exists('wp_enqueue_media') ) {
 			wp_enqueue_media();
 		}
 		wp_enqueue_script(
 			$this->plugin_name,
 			plugin_dir_url(__FILE__) . 'js/wp-mylinks-admin.js',
-			array('jquery'),
-			$this->version,
+			array( 'jquery' ),
+			$this->asset_version('js/wp-mylinks-admin.js'),
 			true
+		);
+		// Translatable labels for the favicon / share-image media modals.
+		wp_localize_script(
+			$this->plugin_name,
+			'wpMylinksAdmin',
+			array(
+				'chooseFavicon'    => __('Choose Favicon', 'wp-mylinks'),
+				'chooseShareImage' => __('Choose Share Image', 'wp-mylinks'),
+			)
+		);
+		// Bundled Select2 (previously enqueued by the CMB2 field class).
+		wp_enqueue_script(
+			'wml-select2',
+			plugin_dir_url(__FILE__) . 'js/select2.min.js',
+			array( 'jquery' ),
+			'4.1.0',
+			true
+		);
+		// Bundled QR generator (MIT, Kazuhiko Arase) for the QR side box (1.1.0).
+		wp_enqueue_script(
+			'wml-qrcode',
+			plugin_dir_url(__FILE__) . 'js/qrcode-generator.js',
+			array(),
+			'1.4.4',
+			true
+		);
+		// Native fields framework behavior (1.1.0): media picker, repeater
+		// groups, Select2 pickers, oEmbed previews.
+		wp_enqueue_script(
+			'wml-fields',
+			plugin_dir_url(__FILE__) . 'js/wml-fields.js',
+			array( 'jquery', 'jquery-ui-sortable', 'wml-select2', 'wp-color-picker', 'wml-qrcode' ),
+			$this->asset_version('js/wml-fields.js'),
+			true
+		);
+		wp_localize_script(
+			'wml-fields',
+			'wmlFields',
+			array(
+				'ajaxUrl'        => admin_url('admin-ajax.php'),
+				'nonce'          => wp_create_nonce('wp_mylinks_fields_ajax'),
+				'mediaTitle'     => __('Select or upload media', 'wp-mylinks'),
+				'mediaButton'    => __('Use this file', 'wp-mylinks'),
+				'importPickFile' => __('Choose an export file first.', 'wp-mylinks'),
+				'importReady'    => __('Ready to import.', 'wp-mylinks'),
+				'importWorking'  => __('Importing…', 'wp-mylinks'),
+				'importFailed'   => __('The import failed.', 'wp-mylinks'),
+			)
 		);
 	}
 
@@ -115,27 +203,25 @@ class Wp_Mylinks_Admin
 	 *   - the WP MyLinks settings page (any tab),
 	 *   - the mylink and mylinks-collection edit / add / list screens.
 	 *
-	 * @param string $hook Current admin page hook suffix.
 	 * @return bool
 	 */
-	private function is_plugin_screen($hook)
-	{
-		if (!function_exists('get_current_screen')) {
+	private function is_plugin_screen() {
+		if ( ! function_exists('get_current_screen') ) {
 			return false;
 		}
 		$screen = get_current_screen();
-		if (!$screen) {
+		if ( ! $screen ) {
 			return false;
 		}
 
 		// Settings page: edit.php?post_type=mylink&page=welcome.
 		// Hook for that submenu is "mylink_page_welcome".
-		if (isset($screen->id) && 'mylink_page_welcome' === $screen->id) {
+		if ( isset($screen->id) && 'mylink_page_welcome' === $screen->id ) {
 			return true;
 		}
 
 		// Mylink CPT screens (list, edit, new).
-		if (isset($screen->post_type) && in_array($screen->post_type, array('mylink', 'mylinks-collection'), true)) {
+		if ( isset($screen->post_type) && in_array($screen->post_type, array( 'mylink', 'mylinks-collection' ), true) ) {
 			return true;
 		}
 
@@ -167,30 +253,29 @@ class Wp_Mylinks_Admin
  */
 add_filter('manage_posts_columns', 'wp_mylinks_default_columns_head');
 
-function wp_mylinks_default_columns_head($defaults)
-{
-	if (!is_admin()) {
+function wp_mylinks_default_columns_head( $defaults ) {
+	if ( ! is_admin() ) {
 		return $defaults;
 	}
 
 	$current_screen = function_exists('get_current_screen') ? get_current_screen() : null;
-	if ($current_screen && in_array($current_screen->post_type, array('mylink'), true)) {
-		$defaults['slug']       = __('URL', 'wp-mylinks');
-		$defaults['post_views'] = __('Views', 'wp-mylinks');
+	if ( $current_screen && in_array($current_screen->post_type, array( 'mylink' ), true) ) {
+		$defaults['slug']        = __('URL', 'wp-mylinks');
+		$defaults['post_views']  = __('Views', 'wp-mylinks');
+		$defaults['post_clicks'] = __('Clicks', 'wp-mylinks');
 	}
 	return $defaults;
 }
 
-function wp_mylinks_default_columns_content($column_name, $post_ID)
-{
-	if ($column_name === 'slug') {
+function wp_mylinks_default_columns_content( $column_name, $post_ID ) {
+	if ( $column_name === 'slug' ) {
 		$post = get_post($post_ID);
-		if (!$post || 'mylink' !== $post->post_type) {
+		if ( ! $post || 'mylink' !== $post->post_type ) {
 			return;
 		}
 		// Use the canonical (slug-stripped) permalink so admins see the real URL.
 		$url = get_permalink($post);
-		if (!$url && !empty($post->post_name)) {
+		if ( ! $url && ! empty($post->post_name) ) {
 			$url = home_url('/' . $post->post_name . '/');
 		}
 		printf(
@@ -199,9 +284,13 @@ function wp_mylinks_default_columns_content($column_name, $post_ID)
 		);
 	}
 
-	if ($column_name === 'post_views') {
+	if ( $column_name === 'post_views' ) {
 		$post_views = (int) get_post_meta($post_ID, 'wp_mylinks_count_visits', true);
 		echo esc_html(number_format_i18n($post_views));
+	}
+
+	if ( $column_name === 'post_clicks' && function_exists('wp_mylinks_get_link_clicks_total') ) {
+		echo esc_html(number_format_i18n(wp_mylinks_get_link_clicks_total($post_ID)));
 	}
 }
 add_action('manage_posts_custom_column', 'wp_mylinks_default_columns_content', 10, 2);
@@ -215,11 +304,10 @@ add_action('manage_posts_custom_column', 'wp_mylinks_default_columns_content', 1
  *
  * @since 1.0.5
  */
-function wp_mylinks_admin_notice()
-{
+function wp_mylinks_admin_notice() {
 	// Don't show on settings page itself.
 	$current_page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only screen check.
-	if ('welcome' === $current_page) {
+	if ( 'welcome' === $current_page ) {
 		return;
 	}
 
@@ -240,17 +328,17 @@ function wp_mylinks_admin_notice()
 		'br'     => array(),
 		'ol'     => array(),
 		'li'     => array(),
-		'a'      => array('href' => array()),
+		'a'      => array( 'href' => array() ),
 		'strong' => array(),
 	);
-?>
+	?>
 	<div class="update-nag notice is-dismissible">
 		<p><?php echo wp_kses($message, $allowed_html); ?></p>
 	</div>
-<?php
+	<?php
 }
 
-if ('yes' !== get_option('wp_mylinks_hide_notice')) {
+if ( 'yes' !== get_option('wp_mylinks_hide_notice') ) {
 	add_action('admin_notices', 'wp_mylinks_admin_notice');
 }
 
@@ -267,23 +355,22 @@ if ('yes' !== get_option('wp_mylinks_hide_notice')) {
  *
  * @return bool
  */
-function wp_mylinks_is_plugin_admin_screen()
-{
-	if (!function_exists('get_current_screen')) {
+function wp_mylinks_is_plugin_admin_screen() {
+	if ( ! function_exists('get_current_screen') ) {
 		return false;
 	}
 	$screen = get_current_screen();
-	if (!$screen) {
+	if ( ! $screen ) {
 		return false;
 	}
 
 	// Settings page: edit.php?post_type=mylink&page=welcome.
-	if (isset($screen->id) && 'mylink_page_welcome' === $screen->id) {
+	if ( isset($screen->id) && 'mylink_page_welcome' === $screen->id ) {
 		return true;
 	}
 
 	// Mylink and Collection CPT screens (list, edit, new).
-	if (isset($screen->post_type) && in_array($screen->post_type, array('mylink', 'mylinks-collection'), true)) {
+	if ( isset($screen->post_type) && in_array($screen->post_type, array( 'mylink', 'mylinks-collection' ), true) ) {
 		return true;
 	}
 
@@ -299,9 +386,8 @@ function wp_mylinks_is_plugin_admin_screen()
  * @param string $footer_text Original footer text.
  * @return string Modified footer text on plugin screens, original elsewhere.
  */
-function wp_mylinks_admin_footer_text($footer_text)
-{
-	if (!wp_mylinks_is_plugin_admin_screen()) {
+function wp_mylinks_admin_footer_text( $footer_text ) {
+	if ( ! wp_mylinks_is_plugin_admin_screen() ) {
 		return $footer_text;
 	}
 
@@ -312,9 +398,33 @@ function wp_mylinks_admin_footer_text($footer_text)
 		/* translators: 1: plugin name, 2: 5-star review link */
 		esc_html__('Enjoyed %1$s? Please leave a %2$s rating. I really appreciate your support!', 'wp-mylinks'),
 		'<strong>' . esc_html($plugin_name) . '</strong>',
-		'<a href="' . esc_url($review_url) . '" target="_blank" rel="noopener"><span class="screen-reader-text">' . esc_html__('5 stars', 'wp-mylinks') . '</span>★★★★★</a>'
+		'<a href="' . esc_url($review_url) . '" target="_blank" rel="noopener noreferrer"><span class="screen-reader-text">' . esc_html__('5 stars', 'wp-mylinks') . '</span>★★★★★</a>'
 	);
 
-	return '<span class="wp-mylinks-footer-thankyou">' . $message . '</span>';
+	return '<span class="oskit-footer-thankyou">' . $message . '</span>';
 }
 add_filter('admin_footer_text', 'wp_mylinks_admin_footer_text');
+
+/**
+ * Show this plugin's version in place of the WordPress version on the right
+ * side of the footer — the more useful number to read back when someone
+ * reports a problem. Untouched everywhere else.
+ *
+ * @since 1.1.0
+ *
+ * @param string $content Original right-hand footer content.
+ * @return string
+ */
+function wp_mylinks_admin_footer_version( $content ) {
+	if ( ! wp_mylinks_is_plugin_admin_screen() ) {
+		return $content;
+	}
+
+	return '<span class="oskit-footer-version">' . sprintf(
+		/* translators: 1: plugin name, 2: plugin version. */
+		esc_html__('%1$s version %2$s', 'wp-mylinks'),
+		esc_html(defined('WP_MYLINKS_NAME') ? WP_MYLINKS_NAME : 'WP MyLinks'),
+		esc_html(defined('WP_MYLINKS_VERSION') ? WP_MYLINKS_VERSION : '')
+	) . '</span>';
+}
+add_filter('update_footer', 'wp_mylinks_admin_footer_version', 20);

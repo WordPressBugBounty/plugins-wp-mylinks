@@ -20,7 +20,7 @@
  */
 
 // Exit if WordPress did not invoke this script as an uninstall.
-if (!defined('WP_UNINSTALL_PLUGIN')) {
+if ( ! defined('WP_UNINSTALL_PLUGIN') ) {
 	exit;
 }
 
@@ -28,7 +28,7 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 
 $delete_data = (string) get_option('wp_mylinks_delete_data_on_uninstall');
 
-if ('yes' !== $delete_data) {
+if ( 'yes' !== $delete_data ) {
 	// User has not opted in to data deletion. Leave everything in place so
 	// reinstalling the plugin restores their settings cleanly.
 	return;
@@ -61,11 +61,19 @@ $options_to_delete = array(
 	'wp_mylinks_twitter_handle',
 	'wp_mylinks_installed_at',
 	'wp_mylinks_version',
+	// 1.1.0 additions (accent colors).
+	'wp_mylinks_accent_bg',
+	'wp_mylinks_accent_button_bg',
+	'wp_mylinks_accent_button_text',
+	'wp_mylinks_accent_text',
+	// 1.1.0 additions (font family, Link URL sources).
+	'wp_mylinks_font_family',
+	'wp_mylinks_link_post_types',
 );
-foreach ($options_to_delete as $opt) {
+foreach ( $options_to_delete as $opt ) {
 	delete_option($opt);
 	// In multisite, also clean network options where applicable.
-	if (is_multisite()) {
+	if ( is_multisite() ) {
 		delete_site_option($opt);
 	}
 }
@@ -95,13 +103,13 @@ $wpdb->query(
 // delete all mylink and mylinks-collection posts. Default behavior leaves them
 // in place so users can recover them by reinstalling the plugin.
 
-if (defined('WP_MYLINKS_PURGE_POSTS_ON_UNINSTALL') && WP_MYLINKS_PURGE_POSTS_ON_UNINSTALL) {
+if ( defined('WP_MYLINKS_PURGE_POSTS_ON_UNINSTALL') && WP_MYLINKS_PURGE_POSTS_ON_UNINSTALL ) {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Bulk post-ID enumeration on uninstall; one-shot.
 	$post_ids = $wpdb->get_col(
 		"SELECT ID FROM {$wpdb->posts} WHERE post_type IN ('mylink', 'mylinks-collection')"
 	);
-	foreach ((array) $post_ids as $post_id) {
-		wp_delete_post((int) $post_id, true);
+	foreach ( (array) $post_ids as $mylinks_post_id ) {
+		wp_delete_post( (int) $mylinks_post_id, true);
 	}
 }
 

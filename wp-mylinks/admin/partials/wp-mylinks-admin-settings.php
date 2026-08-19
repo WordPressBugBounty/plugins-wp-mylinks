@@ -2,6 +2,11 @@
 /**
  * Create the plugin Settings page.
  *
+ * Reshaped to the Online Store Kit house standard in 1.1.0: gold hero band,
+ * dashicon tab bar, card stacks on the wml-* component vocabulary. Every
+ * option name, settings group, and sanitize callback is unchanged from 1.0.8,
+ * and the `?tab=` keys are stable so existing deep links keep resolving.
+ *
  * @link       https://walterpinem.me/
  * @since      1.0.0
  *
@@ -19,13 +24,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Donate button shortcode.
  *
- * Used internally on the Welcome and Support tabs via [donate].
+ * Used internally on the Welcome and Support tabs via [donate]. The shortcode
+ * arguments are unused and deliberately not declared.
  *
- * @param array       $atts    Shortcode attributes (unused).
- * @param string|null $content Shortcode content (unused).
  * @return string
  */
-function wp_mylinks_donate_button_shortcode( $atts, $content = null ) {
+function wp_mylinks_donate_button_shortcode() {
 	ob_start();
 	?>
 	<div class="donate-container" style="text-align:center;">
@@ -57,7 +61,7 @@ function wp_mylinks_create_admin_page() {
 add_action( 'admin_menu', 'wp_mylinks_create_admin_page' );
 
 /**
- * Register settings for the Global and Custom Script tabs.
+ * Register settings for the General and Scripts tabs.
  */
 function wp_mylinks_register_settings() {
 	// Global settings (with sanitization callbacks for safety).
@@ -69,7 +73,30 @@ function wp_mylinks_register_settings() {
 	register_setting( 'mylinks-global', 'wp_mylinks_noindex', array( 'sanitize_callback' => 'wp_mylinks_sanitize_yes_or_empty' ) );
 	register_setting( 'mylinks-global', 'wp_mylinks_credits', array( 'sanitize_callback' => 'wp_mylinks_sanitize_yes_or_empty' ) );
 	register_setting( 'mylinks-global', 'wp_mylinks_hide_notice', array( 'sanitize_callback' => 'wp_mylinks_sanitize_yes_or_empty' ) );
-	register_setting( 'mylinks-global', 'wp_mylinks_delete_data_on_uninstall', array( 'sanitize_callback' => 'wp_mylinks_sanitize_yes_or_empty' ) );
+
+	// Tools tab group. The uninstall flag lives in its own group so saving the
+	// General form (which posts its whole group) can never silently reset it.
+	register_setting( 'mylinks-tools', 'wp_mylinks_delete_data_on_uninstall', array( 'sanitize_callback' => 'wp_mylinks_sanitize_yes_or_empty' ) );
+
+	// Link URL sources (Tools tab). Its own group so saving it never disturbs
+	// the uninstall flag above. Array of post-type slugs; empty = Collections
+	// only. Type 'array' keeps the value an array even when every box is
+	// unchecked (posted as absent).
+	register_setting(
+		'mylinks-link-sources',
+		'wp_mylinks_link_post_types',
+		array(
+			'type'              => 'array',
+			'sanitize_callback' => 'wp_mylinks_sanitize_post_types',
+		)
+	);
+
+	// Accent colors (F8, 1.1.0) — global defaults; each MyLink can override.
+	register_setting( 'mylinks-global', 'wp_mylinks_accent_bg', array( 'sanitize_callback' => 'wp_mylinks_sanitize_hex' ) );
+	register_setting( 'mylinks-global', 'wp_mylinks_accent_button_bg', array( 'sanitize_callback' => 'wp_mylinks_sanitize_hex' ) );
+	register_setting( 'mylinks-global', 'wp_mylinks_accent_button_text', array( 'sanitize_callback' => 'wp_mylinks_sanitize_hex' ) );
+	register_setting( 'mylinks-global', 'wp_mylinks_accent_text', array( 'sanitize_callback' => 'wp_mylinks_sanitize_hex' ) );
+	register_setting( 'mylinks-global', 'wp_mylinks_font_family', array( 'sanitize_callback' => 'wp_mylinks_sanitize_font_family' ) );
 
 	// Schema.org JSON-LD (1.0.8+).
 	register_setting( 'mylinks-global', 'wp_mylinks_enable_schema', array( 'sanitize_callback' => 'wp_mylinks_sanitize_yes_or_empty' ) );
@@ -81,9 +108,11 @@ function wp_mylinks_register_settings() {
 	register_setting( 'mylinks-global', 'wp_mylinks_og_image', array( 'sanitize_callback' => 'esc_url_raw' ) );
 	register_setting( 'mylinks-global', 'wp_mylinks_twitter_handle', array( 'sanitize_callback' => 'wp_mylinks_sanitize_twitter_handle' ) );
 
-	// Custom-script settings — accept raw script/style content by design.
-	// We register an explicit no-op sanitize_callback so Plugin Check passes;
-	// the manage_options capability gates who can save these in the first place.
+	// Custom-script settings — accept raw script/style content, but only from
+	// users WordPress trusts with it. wp_mylinks_sanitize_raw_script delegates
+	// to the shared capability gate (wp_mylinks_sanitize_raw_code): verbatim for
+	// unfiltered_html holders, wp_kses_post for everyone else (notably multisite
+	// site admins, who have manage_options but not unfiltered_html).
 	register_setting( 'mylinks-custom-scripts', 'wp_mylinks_analytics', array( 'sanitize_callback' => 'wp_mylinks_sanitize_raw_script' ) );
 	register_setting( 'mylinks-custom-scripts', 'wp_mylinks_header_script', array( 'sanitize_callback' => 'wp_mylinks_sanitize_raw_script' ) );
 	register_setting( 'mylinks-custom-scripts', 'wp_mylinks_open_body_script', array( 'sanitize_callback' => 'wp_mylinks_sanitize_raw_script' ) );
@@ -105,18 +134,33 @@ if ( ! function_exists( 'wp_mylinks_sanitize_yes_or_empty' ) ) {
 }
 
 /**
- * Sanitize raw script / style content for the Custom Script tab.
+ * Sanitize a hex color option: `#rrggbb` (or `#rgb`), else empty string.
  *
- * The Custom Script feature is intentionally raw — admins paste analytics
- * snippets, GTM containers, Facebook Pixel scripts, custom CSS, etc. Saving
- * is gated by the `manage_options` capability, and rendering at the front
- * end runs the value through `wp_kses()` against an explicit allowlist (see
- * `$wp_mylinks_allowed_script_tags` in the public template).
+ * @since 1.1.0
  *
- * This sanitizer therefore only:
- *   - rejects non-string values,
- *   - normalizes line endings,
- *   - strips low-byte / null characters that would only cause trouble.
+ * @param mixed $value Submitted value.
+ * @return string
+ */
+if ( ! function_exists( 'wp_mylinks_sanitize_hex' ) ) {
+	function wp_mylinks_sanitize_hex( $value ) {
+		$color = sanitize_hex_color( trim( (string) $value ) );
+		return is_string( $color ) ? $color : '';
+	}
+}
+
+/**
+ * Sanitize raw script / style content for the Scripts tab.
+ *
+ * The custom-scripts feature is intentionally raw — admins paste analytics
+ * snippets, GTM containers, Facebook Pixel scripts, custom CSS, etc. Reaching
+ * the Scripts tab requires `manage_options`, but that is NOT sufficient to
+ * store raw `<script>`: on multisite even site Administrators lack
+ * `unfiltered_html`. So this delegates to the shared capability gate
+ * (`wp_mylinks_sanitize_raw_code`), which returns the value verbatim only for
+ * users who hold `unfiltered_html` and runs everyone else through
+ * `wp_kses_post()`. The front-end `wp_kses()` allowlist still permits
+ * `<script>` because values stored by trusted users must render — the trust
+ * decision is made here, at save time, not at output.
  *
  * @since 1.0.8
  *
@@ -125,14 +169,7 @@ if ( ! function_exists( 'wp_mylinks_sanitize_yes_or_empty' ) ) {
  */
 if ( ! function_exists( 'wp_mylinks_sanitize_raw_script' ) ) {
 	function wp_mylinks_sanitize_raw_script( $value ) {
-		if ( ! is_string( $value ) ) {
-			return '';
-		}
-		// Strip only NULL bytes and other low-byte control chars (keep \n, \r, \t).
-		$value = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $value );
-		// Normalize line endings to LF.
-		$value = str_replace( array( "\r\n", "\r" ), "\n", (string) $value );
-		return $value;
+		return wp_mylinks_sanitize_raw_code( $value );
 	}
 }
 
@@ -177,224 +214,391 @@ function wp_mylinks_render_credit_line() {
 	<?php
 }
 
+// ---------------------------------------------------------------------------
+// House-shape building blocks (1.1.0).
+// ---------------------------------------------------------------------------
+
 /**
- * Render the Settings page (all tabs).
+ * Open a settings card: surface, header with dashicon + title, optional
+ * description, and the content well.
+ *
+ * @param string $icon  Dashicon slug without the "dashicons-" prefix.
+ * @param string $title Card title (translated by the caller).
+ * @param string $desc  Optional description. May contain limited HTML.
+ * @return void
  */
-function wp_mylinks_admin_page() {
-	// Resolve the active tab against an allowlist.
-	$allowed_tabs = array( 'welcome', 'global', 'script', 'tutorial_support' );
-	$active_tab   = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'welcome'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab navigation.
-	if ( ! in_array( $active_tab, $allowed_tabs, true ) ) {
-		$active_tab = 'welcome';
-	}
-
-	$base_url = admin_url( 'edit.php?post_type=mylink&page=welcome' );
+function wp_mylinks_card_open( $icon, $title, $desc = '', $wide = false ) {
 	?>
-	<div class="wrap wp_mylinks_pluginpage_title">
-		<h1><?php esc_html_e( 'WP MyLinks', 'wp-mylinks' ); ?></h1>
-		<hr>
-		<h2 class="nav-tab-wrapper">
-			<a href="<?php echo esc_url( $base_url ); ?>" class="nav-tab <?php echo 'welcome' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Welcome', 'wp-mylinks' ); ?></a>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', 'global', $base_url ) ); ?>" class="nav-tab <?php echo 'global' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Global', 'wp-mylinks' ); ?></a>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', 'script', $base_url ) ); ?>" class="nav-tab <?php echo 'script' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Custom Script', 'wp-mylinks' ); ?></a>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', 'tutorial_support', $base_url ) ); ?>" class="nav-tab <?php echo 'tutorial_support' === $active_tab ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Support', 'wp-mylinks' ); ?></a>
-		</h2>
+	<div class="wml-settings-card<?php echo $wide ? ' wml-card--wide' : ''; ?>">
+		<div class="wml-card-header">
+			<span class="dashicons dashicons-<?php echo esc_attr( $icon ); ?>" aria-hidden="true"></span>
+			<h2><?php echo esc_html( $title ); ?></h2>
+		</div>
+		<div class="wml-card-body">
+			<?php if ( '' !== $desc ) : ?>
+				<p class="wml-card-description">
+					<?php
+					echo wp_kses(
+						$desc,
+						array(
+							'code'   => array(),
+							'strong' => array(),
+							'b'      => array(),
+							'a'      => array(
+								'href'   => array(),
+								'target' => array(),
+								'rel'    => array(),
+							),
+						)
+					);
+					?>
+				</p>
+			<?php endif; ?>
+	<?php
+}
 
-		<?php
-		switch ( $active_tab ) {
-			case 'script':
-				wp_mylinks_render_script_tab();
-				break;
-			case 'global':
-				wp_mylinks_render_global_tab();
-				break;
-			case 'tutorial_support':
-				wp_mylinks_render_support_tab();
-				break;
-			case 'welcome':
-			default:
-				wp_mylinks_render_welcome_tab();
-				break;
-		}
-		?>
+/**
+ * Close a settings card.
+ *
+ * @return void
+ */
+function wp_mylinks_card_close() {
+	echo '</div></div>';
+}
+
+/**
+ * Render a toggle row for a yes/empty checkbox option.
+ *
+ * The input stays a real checkbox (value "yes", same name as before) so the
+ * save path is unchanged; the track is presentation only.
+ *
+ * @param string $option Option name (also used as the element id).
+ * @param string $label  Toggle label text.
+ * @param string $desc   Help text. May contain limited HTML.
+ * @return void
+ */
+function wp_mylinks_toggle_row( $option, $label, $desc = '' ) {
+	?>
+	<div class="wml-field wml-field--toggle">
+		<label class="wml-toggle" for="<?php echo esc_attr( $option ); ?>">
+			<input type="checkbox" id="<?php echo esc_attr( $option ); ?>" name="<?php echo esc_attr( $option ); ?>" value="yes" <?php checked( get_option( $option ), 'yes' ); ?>>
+			<span class="wml-toggle__track" aria-hidden="true"></span>
+			<span class="wml-toggle__text">
+				<strong><?php echo wp_kses( $label, array( 'code' => array() ) ); ?></strong>
+				<?php if ( '' !== $desc ) : ?>
+					<small><?php echo wp_kses( $desc, array( 'code' => array() ) ); ?></small>
+				<?php endif; ?>
+			</span>
+		</label>
 	</div>
 	<?php
 }
 
 /**
- * Render the Custom Script tab.
+ * Render a raw-script textarea row for the Scripts tab.
+ *
+ * @param string $option Option name (also used as the element id).
+ * @param string $label  Field label.
+ * @param string $desc   Help text. May contain limited HTML.
+ * @return void
  */
-function wp_mylinks_render_script_tab() {
+function wp_mylinks_script_row( $option, $label, $desc = '', $rows = 8 ) {
 	?>
-	<!-- Custom Script & Style -->
-	<form method="post" action="options.php">
-		<?php
-		settings_errors();
-		settings_fields( 'mylinks-custom-scripts' );
-		do_settings_sections( 'mylinks-custom-scripts' );
-		?>
-		<h1 class="section_wp_mylinks"><?php esc_html_e( 'Custom Scripts & Styles', 'wp-mylinks' ); ?></h1>
-		<p><?php esc_html_e( 'Add custom scripts and styles for the MyLinks page.', 'wp-mylinks' ); ?><br /></p>
-		<hr>
-
-		<h2 class="section_wp_mylinks"><?php esc_html_e( 'Analytics Tracking Scripts', 'wp-mylinks' ); ?></h2>
-		<p><?php esc_html_e( 'Track how the MyLinks page performs with Google Analytics and any other analytics scripts.', 'wp-mylinks' ); ?><br /></p>
-		<table class="form-table">
-			<tbody>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="mylinks_misc" for="wp_mylinks_analytics"><b><?php esc_html_e( 'Analytics Script', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<textarea id="wp_mylinks_analytics" name="wp_mylinks_analytics" class="mylinks_input_textarea" rows="5"><?php echo esc_textarea( get_option( 'wp_mylinks_analytics' ) ); ?></textarea>
-						<p class="input-description">
-							<?php
-							echo wp_kses(
-								__( 'Please include the <code>&lt;script&gt;</code>...<code>&lt;/script&gt;</code> tags.', 'wp-mylinks' ),
-								array( 'code' => array() )
-							);
-							?>
-						</p>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<hr>
-
-		<h2 class="section_wp_mylinks"><?php esc_html_e( 'Custom Scripts', 'wp-mylinks' ); ?></h2>
-		<p>
+	<div class="wml-field">
+		<label class="wml-field__label" for="<?php echo esc_attr( $option ); ?>"><?php echo esc_html( $label ); ?></label>
+		<textarea id="<?php echo esc_attr( $option ); ?>" name="<?php echo esc_attr( $option ); ?>" class="wml-field__input wml-code" rows="<?php echo esc_attr( $rows ); ?>" spellcheck="false" wrap="off"><?php echo esc_textarea( get_option( $option ) ); ?></textarea>
+		<?php if ( '' !== $desc ) : ?>
+			<p class="wml-field__help">
 			<?php
 			echo wp_kses(
-				__( 'You can put about anything you want from Google Tag Manager to Facebook Pixel script in the header and footer sections of the<br> MyLinks page.', 'wp-mylinks' ),
-				array( 'br' => array() )
+				$desc,
+				array(
+					'code' => array(),
+					'b'    => array(),
+				)
 			);
 			?>
-			<br />
-		</p>
-		<table class="form-table">
-			<tbody>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="mylinks_misc" for="wp_mylinks_header_script"><b><?php esc_html_e( 'Header', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<textarea id="wp_mylinks_header_script" name="wp_mylinks_header_script" class="mylinks_input_textarea" rows="5"><?php echo esc_textarea( get_option( 'wp_mylinks_header_script' ) ); ?></textarea>
-						<p class="input-description">
-							<?php
-							echo wp_kses(
-								__( 'Anything you put here will be included in <code>&lt;head&gt;</code>. Please include <code>&lt;script&gt;</code> etc.', 'wp-mylinks' ),
-								array( 'code' => array() )
-							);
-							?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="mylinks_misc" for="wp_mylinks_open_body_script"><b><?php esc_html_e( 'After Body Tag', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<textarea id="wp_mylinks_open_body_script" name="wp_mylinks_open_body_script" class="mylinks_input_textarea" rows="5"><?php echo esc_textarea( get_option( 'wp_mylinks_open_body_script' ) ); ?></textarea>
-						<p class="input-description">
-							<?php
-							echo wp_kses(
-								__( 'Inserted script will be placed after the opening <code>&lt;body&gt;</code> tag. Please include the <code>&lt;script&gt;</code>...<code>&lt;/script&gt;</code> tags', 'wp-mylinks' ),
-								array( 'code' => array() )
-							);
-							?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="mylinks_misc" for="wp_mylinks_footer_script"><b><?php esc_html_e( 'Footer', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<textarea id="wp_mylinks_footer_script" name="wp_mylinks_footer_script" class="mylinks_input_textarea" rows="5"><?php echo esc_textarea( get_option( 'wp_mylinks_footer_script' ) ); ?></textarea>
-						<p class="input-description">
-							<?php
-							echo wp_kses(
-								__( 'Anything you put here will be placed just before <code>&lt;/body&gt;</code>. Please include <code>&lt;script&gt;</code> etc.', 'wp-mylinks' ),
-								array( 'code' => array() )
-							);
-							?>
-						</p>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<hr>
-
-		<h2 class="section_wp_mylinks"><?php esc_html_e( 'Custom Styles', 'wp-mylinks' ); ?></h2>
-		<p>
-			<?php esc_html_e( 'You can set custom styles for the MyLinks page.', 'wp-mylinks' ); ?>
-			<br />
-		</p>
-		<table class="form-table">
-			<tbody>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="mylinks_misc" for="wp_mylinks_custom_css"><b><?php esc_html_e( 'Custom CSS', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<textarea id="wp_mylinks_custom_css" name="wp_mylinks_custom_css" class="mylinks_input_textarea" rows="5"><?php echo esc_textarea( get_option( 'wp_mylinks_custom_css' ) ); ?></textarea>
-						<p class="input-description">
-							<?php
-							echo wp_kses(
-								__( 'Add your custom css code <b>without</b> the <code>&lt;style&gt;</code> tag.', 'wp-mylinks' ),
-								array(
-									'code' => array(),
-									'b'    => array(),
-								)
-							);
-							?>
-						</p>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<hr>
-
-		<h2 class="section_wp_mylinks"><?php esc_html_e( 'Dequeue Other Scripts and Styles', 'wp-mylinks' ); ?></h2>
-		<p>
-			<?php
-			echo wp_kses(
-				__( '<strong>Experimental!</strong> Some plugins might add additional scripts and styles into the MyLink page, which could result in display issues. By activating this feature, this plugin will forcibly remove all scripts and styles added by other plugins.', 'wp-mylinks' ),
-				array( 'strong' => array() )
-			);
-			?>
-			<br />
-		</p>
-		<p>
-			<?php esc_html_e( 'Should you encounter issues like images not displaying properly, missing images, or styling problems, you may need to enable this feature.', 'wp-mylinks' ); ?>
-			<br />
-		</p>
-		<table class="form-table">
-			<tbody>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_dequeue" for="wp_mylinks_dequeue"><b><?php esc_html_e( 'Dequeue', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input type="checkbox" id="wp_mylinks_dequeue" name="wp_mylinks_dequeue" class="my_links_checkbox" value="yes" <?php checked( get_option( 'wp_mylinks_dequeue' ), 'yes' ); ?>>
-						<?php esc_html_e( 'Dequeue All Scripts and Styles', 'wp-mylinks' ); ?>
-						<br>
-						<p class="input-description">
-							<?php esc_html_e( "This will dequeue other plugins' scripts and styles only on MyLink page.", 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<hr>
-		<?php submit_button(); ?>
-	</form>
-	<!-- End - Custom Scripts & Styles -->
+										</p>
+		<?php endif; ?>
+	</div>
 	<?php
 }
 
 /**
- * Render the Global tab.
+ * The save bar with the primary submit button.
+ *
+ * @return void
+ */
+function wp_mylinks_save_bar() {
+	?>
+	<div class="wml-settings-footer">
+		<button type="submit" class="wml-button-primary"><?php esc_html_e( 'Save Changes', 'wp-mylinks' ); ?></button>
+	</div>
+	<?php
+}
+
+/**
+ * The WP MyLinks brand mark for the settings header.
+ *
+ * This is the ONE inline SVG the house standard permits: a product's own mark
+ * is identity, not iconography, and no dashicon can stand in for it — every
+ * other symbol on the screen stays a dashicon. Ported from
+ * `_dev/wporg-assets/icon.svg` (an avatar circle over three link bars): the
+ * yellow background square is dropped because the CSS plate
+ * (`.wml-settings-icon`, an ink tile) IS the background, and the shapes are
+ * recoloured to brand yellow — which measures ~10:1 on ink but only ~1.4:1 on
+ * white, so it is a background colour everywhere except on the ink plate. The
+ * colours are baked in, not inherited. Emitted through wp_kses (see
+ * wp_mylinks_brand_mark_tags) so the markup is fixed and auditable.
+ *
+ * @since 1.1.0
+ *
+ * @return string SVG markup.
+ */
+function wp_mylinks_brand_mark() {
+	return implode(
+		'',
+		array(
+			'<svg class="wml-brand-mark" viewBox="0 0 256 256" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">',
+			// Avatar head.
+			'<circle cx="128" cy="76" r="34" fill="#ffd957" />',
+			// Three stacked link bars.
+			'<rect x="54" y="128" width="148" height="30" rx="15" fill="#ffd957" />',
+			'<rect x="54" y="168" width="148" height="30" rx="15" fill="#ffd957" />',
+			'<rect x="54" y="208" width="148" height="30" rx="15" fill="#ffd957" />',
+			'</svg>',
+		)
+	);
+}
+
+/**
+ * wp_kses allowlist for the brand mark.
+ *
+ * Attribute names MUST be lowercase: wp_kses lowercases them before matching,
+ * so a `viewBox` entry would never match and the mark would lose its viewBox
+ * and render at intrinsic size. The lowercase `viewbox` it emits is re-adjusted
+ * back to `viewBox` by the HTML parser for inline SVG, so it renders correctly.
+ *
+ * @since 1.1.0
+ *
+ * @return array<string,array<string,bool>>
+ */
+function wp_mylinks_brand_mark_tags() {
+	return array(
+		'svg'    => array(
+			'class'       => true,
+			'viewbox'     => true,
+			'aria-hidden' => true,
+			'focusable'   => true,
+			'xmlns'       => true,
+		),
+		'circle' => array(
+			'cx'   => true,
+			'cy'   => true,
+			'r'    => true,
+			'fill' => true,
+		),
+		'rect'   => array(
+			'x'      => true,
+			'y'      => true,
+			'width'  => true,
+			'height' => true,
+			'rx'     => true,
+			'fill'   => true,
+		),
+	);
+}
+
+/**
+ * Render the Settings page (all tabs).
+ */
+function wp_mylinks_admin_page() {
+	// Tab key => [ dashicon, label, optional render callable ]. Support stays
+	// last (house convention); keys are stable since 1.0.x so bookmarks and
+	// deep links keep resolving.
+	$tabs = array(
+		'welcome'          => array( 'admin-home', __( 'Welcome', 'wp-mylinks' ) ),
+		'global'           => array( 'admin-generic', __( 'General', 'wp-mylinks' ) ),
+		'script'           => array( 'editor-code', __( 'Scripts', 'wp-mylinks' ) ),
+		'tools'            => array( 'admin-tools', __( 'Tools', 'wp-mylinks' ) ),
+		'tutorial_support' => array( 'sos', __( 'Support', 'wp-mylinks' ) ),
+	);
+
+	/**
+	 * Filter the settings-page tabs.
+	 *
+	 * Each entry is keyed by its `?tab=` slug (sanitize_key form) and holds
+	 * `array( dashicon-slug, label, render-callable )`; the callable is
+	 * required for added tabs and ignored for the built-in four. This is the
+	 * registration surface Pro uses for its settings tabs — by house
+	 * convention, keep added tabs before 'tutorial_support'.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param array<string,array> $tabs Tab definitions.
+	 */
+	$tabs = apply_filters( 'wp_mylinks_settings_tabs', $tabs );
+	$tabs = is_array( $tabs ) ? $tabs : array();
+
+	// Resolve the active tab against the (filtered) allowlist.
+	$active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'welcome'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab navigation.
+	if ( ! isset( $tabs[ $active_tab ] ) ) {
+		$active_tab = 'welcome';
+	}
+
+	$base_url = admin_url( 'edit.php?post_type=mylink&page=welcome' );
+
+	$version = defined( 'WP_MYLINKS_VERSION' ) ? WP_MYLINKS_VERSION : '';
+	?>
+	<div class="wrap wml-settings-wrap">
+
+		<?php // Core relocates admin notices after this marker — above the header. ?>
+		<hr class="wp-header-end" style="margin:0;border:0;">
+
+		<div class="wml-settings-header">
+			<div class="wml-settings-header-content">
+				<div class="wml-settings-header-left">
+					<?php // The plugin's own glyph. To go back to the generic WordPress icon, swap the echo for: <span class="dashicons dashicons-admin-links" aria-hidden="true"></span> ?>
+					<div class="wml-settings-icon"><?php echo wp_kses( wp_mylinks_brand_mark(), wp_mylinks_brand_mark_tags() ); ?></div>
+					<div>
+						<h1><?php esc_html_e( 'WP MyLinks Settings', 'wp-mylinks' ); ?></h1>
+						<p class="wml-settings-subtitle"><?php esc_html_e( 'Self-hosted link-in-bio pages on your own domain', 'wp-mylinks' ); ?></p>
+					</div>
+				</div>
+				<?php if ( '' !== $version ) : ?>
+					<span class="wml-version-badge">v<?php echo esc_html( $version ); ?></span>
+				<?php endif; ?>
+			</div>
+		</div>
+
+		<nav class="wml-tabs" aria-label="<?php esc_attr_e( 'WP MyLinks settings tabs', 'wp-mylinks' ); ?>">
+			<?php foreach ( $tabs as $tab_key => $tab ) : ?>
+				<?php
+				$tab_url   = 'welcome' === $tab_key ? $base_url : add_query_arg( 'tab', $tab_key, $base_url );
+				$is_active = ( $tab_key === $active_tab );
+				?>
+				<a href="<?php echo esc_url( $tab_url ); ?>"
+					class="wml-tabs__tab<?php echo $is_active ? ' wml-tabs__tab--active' : ''; ?>"
+					<?php echo $is_active ? 'aria-current="page"' : ''; ?>>
+					<span class="dashicons dashicons-<?php echo esc_attr( $tab[0] ); ?>" aria-hidden="true"></span><?php echo esc_html( $tab[1] ); ?>
+				</a>
+			<?php endforeach; ?>
+		</nav>
+
+		<div class="wml-settings-content">
+			<?php
+			switch ( $active_tab ) {
+				case 'script':
+					wp_mylinks_render_script_tab();
+					break;
+				case 'tools':
+					wp_mylinks_render_tools_tab();
+					break;
+				case 'global':
+					wp_mylinks_render_global_tab();
+					break;
+				case 'tutorial_support':
+					wp_mylinks_render_support_tab();
+					break;
+				case 'welcome':
+					wp_mylinks_render_welcome_tab();
+					break;
+				default:
+					// A filter-registered tab: its definition carries the renderer.
+					if ( isset( $tabs[ $active_tab ][2] ) && is_callable( $tabs[ $active_tab ][2] ) ) {
+						call_user_func( $tabs[ $active_tab ][2] );
+					} else {
+						wp_mylinks_render_welcome_tab();
+					}
+					break;
+			}
+			?>
+		</div>
+	</div>
+	<?php
+}
+
+/**
+ * Render the Welcome tab: Quick Start card + "ways to use" checklist card
+ * (the house Welcome-tab pattern), the video tutorial, and the permalink
+ * troubleshooting card.
+ */
+function wp_mylinks_render_welcome_tab() {
+	$new_mylink_url = esc_url( admin_url( 'post-new.php?post_type=mylink' ) );
+	$general_url    = esc_url( admin_url( 'edit.php?post_type=mylink&page=welcome&tab=global' ) );
+	?>
+	<div class="wml-settings-grid wml-settings-grid--2col">
+
+		<?php wp_mylinks_card_open( 'controls-play', __( 'Quick Start', 'wp-mylinks' ) ); ?>
+			<p><?php esc_html_e( 'Thank you for choosing WP MyLinks — self-hosted link-in-bio pages on your own domain. Your first page is five steps away:', 'wp-mylinks' ); ?></p>
+			<ol class="wml-steps">
+				<li><?php esc_html_e( 'Go to MyLinks → Add New MyLink', 'wp-mylinks' ); ?></li>
+				<li><?php esc_html_e( 'Set up your profile: avatar, name, description, and social links', 'wp-mylinks' ); ?></li>
+				<li><?php esc_html_e( 'Add unlimited links you want to share with your audience', 'wp-mylinks' ); ?></li>
+				<li><?php esc_html_e( 'Choose one of the built-in themes to match your brand', 'wp-mylinks' ); ?></li>
+				<li><?php esc_html_e( 'Publish, then paste your new URL into every bio', 'wp-mylinks' ); ?></li>
+			</ol>
+			<p><a href="<?php echo $new_mylink_url; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above. ?>" class="wml-button-primary"><?php esc_html_e( 'Create your first MyLink', 'wp-mylinks' ); ?></a></p>
+		<?php wp_mylinks_card_close(); ?>
+
+		<?php wp_mylinks_card_open( 'yes-alt', __( 'Ways to Use WP MyLinks', 'wp-mylinks' ) ); ?>
+			<ul class="wml-check">
+				<li><span class="dashicons dashicons-yes" aria-hidden="true"></span><?php esc_html_e( 'Unlimited bio pages — one per brand, campaign, or team member', 'wp-mylinks' ); ?></li>
+				<li><span class="dashicons dashicons-yes" aria-hidden="true"></span><?php esc_html_e( 'Your own domain: yoursite.com/me instead of a rented short link', 'wp-mylinks' ); ?></li>
+				<li><span class="dashicons dashicons-yes" aria-hidden="true"></span><?php esc_html_e( 'Buttons, image cards, YouTube, TikTok, Spotify, and more', 'wp-mylinks' ); ?></li>
+				<li><span class="dashicons dashicons-yes" aria-hidden="true"></span><?php esc_html_e( 'SEO built in: Schema.org JSON-LD, Open Graph, and Twitter Cards', 'wp-mylinks' ); ?></li>
+				<li><span class="dashicons dashicons-yes" aria-hidden="true"></span><?php esc_html_e( 'Use a MyLink page as your site’s front page', 'wp-mylinks' ); ?></li>
+			</ul>
+			<p><a href="<?php echo $general_url; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above. ?>" class="wml-button-secondary"><?php esc_html_e( 'Open General settings', 'wp-mylinks' ); ?></a></p>
+		<?php wp_mylinks_card_close(); ?>
+
+		<?php wp_mylinks_card_open( 'video-alt3', __( 'Watch the Complete Overview and Tutorial', 'wp-mylinks' ) ); ?>
+			<div class="wml-embed">
+				<iframe src="https://www.youtube.com/embed/?listType=playlist&list=PLwazGJFvaLnCZrBRuDeDsbkpjjOPKz4pC" title="<?php esc_attr_e( 'WP MyLinks Tutorial', 'wp-mylinks' ); ?>" allowfullscreen></iframe>
+			</div>
+		<?php wp_mylinks_card_close(); ?>
+
+		<?php
+		wp_mylinks_card_open(
+			'sos',
+			__( 'Seeing a 404 on your MyLink page?', 'wp-mylinks' ),
+			__( 'This is the most common first-run hiccup, and the fix takes ten seconds.', 'wp-mylinks' )
+		);
+		?>
+			<ol class="wml-steps">
+				<li>
+					<?php
+					echo wp_kses(
+						__( 'Go to <b>Settings</b> → <a href="options-permalink.php"><b>Permalinks</b></a>.', 'wp-mylinks' ),
+						array(
+							'b' => array(),
+							'a' => array( 'href' => array() ),
+						)
+					);
+					?>
+				</li>
+				<li>
+					<?php
+					echo wp_kses(
+						__( 'Click the <b>Save Changes</b> button without changing anything.', 'wp-mylinks' ),
+						array( 'b' => array() )
+					);
+					?>
+				</li>
+				<li><?php esc_html_e( 'Reload your MyLink page. The issue will most likely disappear.', 'wp-mylinks' ); ?></li>
+			</ol>
+			<p class="wml-field__help"><?php esc_html_e( 'If the problem persists, make sure you are using pretty permalinks (Post name). Careful: changing an established permalink structure affects all your URLs and is bad for SEO.', 'wp-mylinks' ); ?></p>
+		<?php wp_mylinks_card_close(); ?>
+
+	</div>
+
+	<?php echo do_shortcode( '[donate]' ); ?>
+	<?php wp_mylinks_render_credit_line(); ?>
+	<?php
+}
+
+/**
+ * Render the General tab (settings group: mylinks-global).
  */
 function wp_mylinks_render_global_tab() {
 	$theme_options = (string) get_option( 'mylinks_theme' );
@@ -402,581 +606,509 @@ function wp_mylinks_render_global_tab() {
 	// Drop the 'none' option from the global theme list (only valid per-post).
 	unset( $themes['none'] );
 	?>
-	<!-- Global Configurations -->
 	<form method="post" action="options.php">
 		<?php
 		settings_errors();
 		settings_fields( 'mylinks-global' );
 		do_settings_sections( 'mylinks-global' );
+
+		echo '<div class="wml-settings-grid">';
+
+		wp_mylinks_card_open(
+			'admin-appearance',
+			__( 'Display', 'wp-mylinks' ),
+			__( 'Unless overridden on an individual MyLink page, these settings apply globally.', 'wp-mylinks' )
+		);
 		?>
-		<h1 class="section_wp_mylinks"><?php esc_html_e( 'Global Configurations', 'wp-mylinks' ); ?></h1>
-		<p><?php esc_html_e( 'Unless set on individual MyLinks page, below configurations will be implemented globally.', 'wp-mylinks' ); ?><br /></p>
-		<hr>
-
-		<h2 class="section_wp_mylinks"><?php esc_html_e( 'Display Settings', 'wp-mylinks' ); ?></h2>
-		<p><?php esc_html_e( 'Determine how you want the MyLinks page to look like globally.', 'wp-mylinks' ); ?><br /></p>
-		<table class="form-table">
-			<tbody>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="mylinks_theme" for="mylinks_theme"><b><?php esc_html_e( 'Global Theme', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<select id="mylinks_theme" name="mylinks_theme" class="mylinks_input_select">
-							<?php foreach ( $themes as $key => $label ) : ?>
-								<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $theme_options, $key ); ?>><?php echo esc_html( $label ); ?></option>
-							<?php endforeach; ?>
-						</select>
-						<p class="input-description"><?php esc_html_e( 'Set the theme for the MyLinks page.', 'wp-mylinks' ); ?></p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_credits" for="wp_mylinks_credits"><b><?php esc_html_e( 'Show Some ❤ to Support Me?', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input type="checkbox" id="wp_mylinks_credits" name="wp_mylinks_credits" class="my_links_checkbox" value="yes" <?php checked( get_option( 'wp_mylinks_credits' ), 'yes' ); ?>>
-						<?php esc_html_e( 'Yes, I Definitely Want to Support You', 'wp-mylinks' ); ?>
-						<br>
-						<p class="input-description">
-							<?php esc_html_e( 'This will add credits on the footer of MyLinks page.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_hide_notice" for="wp_mylinks_hide_notice"><b><?php esc_html_e( 'Hide Admin Notice?', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input type="checkbox" id="wp_mylinks_hide_notice" name="wp_mylinks_hide_notice" class="my_links_checkbox" value="yes" <?php checked( get_option( 'wp_mylinks_hide_notice' ), 'yes' ); ?>>
-						<?php esc_html_e( "Everything's Alright, Hide Notice Now", 'wp-mylinks' ); ?>
-						<br>
-						<p class="input-description">
-							<?php esc_html_e( 'This will hide admin notice to flush your permalinks.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_delete_data_on_uninstall" for="wp_mylinks_delete_data_on_uninstall"><b><?php esc_html_e( 'Delete Plugin Data on Uninstall?', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input type="checkbox" id="wp_mylinks_delete_data_on_uninstall" name="wp_mylinks_delete_data_on_uninstall" class="my_links_checkbox" value="yes" <?php checked( get_option( 'wp_mylinks_delete_data_on_uninstall' ), 'yes' ); ?>>
-						<?php esc_html_e( 'Yes, Delete All Plugin Data on Uninstall', 'wp-mylinks' ); ?>
-						<br>
-						<p class="input-description">
-							<?php esc_html_e( 'When enabled, deleting the plugin from the Plugins screen will remove all WP MyLinks settings and oEmbed caches. MyLink posts and their content are preserved by default. Leave this unchecked to keep your settings if you ever uninstall and reinstall.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<hr>
-
-		<table class="form-table">
-			<tbody>
-				<h2 class="section_wp_mylinks"><?php esc_html_e( 'Setup Global Meta Tags', 'wp-mylinks' ); ?></h2>
-				<p>
+			<div class="wml-field">
+				<label class="wml-field__label" for="mylinks_theme"><?php esc_html_e( 'Global Theme', 'wp-mylinks' ); ?></label>
+				<select id="mylinks_theme" name="mylinks_theme">
+					<?php foreach ( $themes as $key => $label ) : ?>
+						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $theme_options, $key ); ?>><?php echo esc_html( $label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+				<p class="wml-field__help"><?php esc_html_e( 'Set the theme for the MyLinks page.', 'wp-mylinks' ); ?></p>
+			</div>
+			<?php
+			$accent_options = array(
+				'wp_mylinks_accent_bg'          => __( 'Accent: Page Background', 'wp-mylinks' ),
+				'wp_mylinks_accent_button_bg'   => __( 'Accent: Button Background', 'wp-mylinks' ),
+				'wp_mylinks_accent_button_text' => __( 'Accent: Button Text', 'wp-mylinks' ),
+				'wp_mylinks_accent_text'        => __( 'Accent: Text Color', 'wp-mylinks' ),
+			);
+			?>
+			<div class="wml-field">
+				<span class="wml-field__label"><?php esc_html_e( 'Accent Colors', 'wp-mylinks' ); ?></span>
+				<p class="wml-field__help" style="margin-block-end:10px;"><?php esc_html_e( 'Optional overrides applied on top of every theme, site-wide. Leave a color empty to keep each theme as designed. Individual MyLink pages can override these.', 'wp-mylinks' ); ?></p>
+				<?php foreach ( $accent_options as $accent_option => $accent_label ) : ?>
+					<div class="wml-field">
+						<label class="wml-field__label" for="<?php echo esc_attr( $accent_option ); ?>"><?php echo esc_html( $accent_label ); ?></label>
+						<input type="text" class="wml-color" id="<?php echo esc_attr( $accent_option ); ?>" name="<?php echo esc_attr( $accent_option ); ?>" value="<?php echo esc_attr( get_option( $accent_option, '' ) ); ?>">
+					</div>
+				<?php endforeach; ?>
+			</div>
+			<div class="wml-field">
+				<label class="wml-field__label" for="wp_mylinks_font_family"><?php esc_html_e( 'Font Family', 'wp-mylinks' ); ?></label>
+				<input type="text" id="wp_mylinks_font_family" name="wp_mylinks_font_family" class="wml-field__input" value="<?php echo esc_attr( get_option( 'wp_mylinks_font_family', '' ) ); ?>" placeholder="Poppins, sans-serif">
+				<p class="wml-field__help">
 					<?php
 					echo wp_kses(
-						__( 'Meta tags for the MyLinks page, will be shown both on search engine result and browser tab. If you use Yoast SEO or built-in<br> <strong>Setup Meta Tags</strong> form and already set both the <code>meta title</code> and <code>description</code> on MyLinks post editor, they will be used<br> instead of below values.', 'wp-mylinks' ),
+						__( 'Optional site-wide font for every MyLinks page. Name a font already available on your site, e.g. <code>Poppins, sans-serif</code>. WP MyLinks does not fetch fonts from third parties, to keep your visitors\' data private — load a web font through your theme or the <strong>Custom Styles</strong> field on the Scripts tab, then name it here. Individual pages can override this.', 'wp-mylinks' ),
 						array(
-							'strong' => array(),
 							'code'   => array(),
-							'br'     => array(),
+							'strong' => array(),
 						)
 					);
 					?>
-					<br />
 				</p>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="mylinks_meta_title" for="mylinks_meta_title"><b><?php esc_html_e( 'Meta Title', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input type="text" id="mylinks_meta_title" name="mylinks_meta_title" class="mylinks_input_text" value="<?php echo esc_attr( get_option( 'mylinks_meta_title' ) ); ?>" placeholder="<?php esc_attr_e( 'e.g. Your MyLinks Title | Your Site Title', 'wp-mylinks' ); ?>">
-						<p class="input-description">
-							<?php esc_html_e( 'Set the meta title for the MyLinks page.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="mylinks_meta_description" for="mylinks_meta_description"><b><?php esc_html_e( 'Meta Description', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<textarea id="mylinks_meta_description" name="mylinks_meta_description" class="mylinks_input_textarea" rows="5"><?php echo esc_textarea( get_option( 'mylinks_meta_description' ) ); ?></textarea>
-						<p class="input-description">
-							<?php esc_html_e( 'Set the meta description of the MyLinks page.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="mylinks_upload_favicon" for="mylinks_upload_favicon"><b><?php esc_html_e( 'Custom Favicon', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input id="mylinks_upload_favicon" class="wp-mylinks-uploader-url" type="text" name="mylinks_upload_favicon" value="<?php echo esc_attr( get_option( 'mylinks_upload_favicon' ) ); ?>" />
-						<input id="upload_image_button" type="button" class="button-primary" value="<?php esc_attr_e( 'Choose Favicon', 'wp-mylinks' ); ?>" />
-						<p class="input-description">
-							<?php esc_html_e( 'Set a favicon for the MyLinks page.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_noindex" for="wp_mylinks_noindex"><b>
-							<?php echo wp_kses( __( 'Set to <code>noindex</code>?', 'wp-mylinks' ), array( 'code' => array() ) ); ?>
-						</b></label>
-					</th>
-					<td>
-						<input type="checkbox" id="wp_mylinks_noindex" name="wp_mylinks_noindex" class="my_links_checkbox" value="yes" <?php checked( get_option( 'wp_mylinks_noindex' ), 'yes' ); ?>>
-						<?php echo wp_kses( __( 'Yes, Set to <code>noindex</code>', 'wp-mylinks' ), array( 'code' => array() ) ); ?>
-						<br>
-						<p class="input-description">
-							<?php esc_html_e( 'This will prevent MyLinks page from being indexed on search engine.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_nofollow" for="wp_mylinks_nofollow"><b>
-							<?php echo wp_kses( __( 'Set to <code>nofollow</code>?', 'wp-mylinks' ), array( 'code' => array() ) ); ?>
-						</b></label>
-					</th>
-					<td>
-						<input type="checkbox" id="wp_mylinks_nofollow" name="wp_mylinks_nofollow" class="my_links_checkbox" value="yes" <?php checked( get_option( 'wp_mylinks_nofollow' ), 'yes' ); ?>>
-						<?php echo wp_kses( __( 'Yes, Set to <code>nofollow</code>', 'wp-mylinks' ), array( 'code' => array() ) ); ?>
-						<br>
-						<p class="input-description">
-							<?php esc_html_e( 'This will ban crawlers to follow all the links on the MyLinks page.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<hr>
-
-		<h2 class="section_wp_mylinks"><?php esc_html_e( 'Schema.org Structured Data', 'wp-mylinks' ); ?></h2>
-		<p>
+			</div>
 			<?php
-			echo wp_kses(
-				__( 'Output <code>Person</code> or <code>Organization</code> JSON-LD in the <code>&lt;head&gt;</code> of every MyLinks page so search engines can identify you. If Yoast SEO is active and emitting its own schema, this will defer to Yoast automatically. You can override the type per page on the MyLink editor.', 'wp-mylinks' ),
-				array( 'code' => array() )
+			wp_mylinks_toggle_row(
+				'wp_mylinks_credits',
+				__( 'Yes, I Definitely Want to Support You', 'wp-mylinks' ),
+				__( 'This will add credits on the footer of MyLinks page.', 'wp-mylinks' )
+			);
+			wp_mylinks_toggle_row(
+				'wp_mylinks_hide_notice',
+				__( "Everything's Alright, Hide Notice Now", 'wp-mylinks' ),
+				__( 'This will hide admin notice to flush your permalinks.', 'wp-mylinks' )
+			);
+			wp_mylinks_card_close();
+
+			wp_mylinks_card_open(
+				'search',
+				__( 'Meta Tags', 'wp-mylinks' ),
+				__( 'Shown on search engine results and the browser tab. If you use Yoast SEO or the per-page <strong>Setup Meta Tags</strong> form and already set both the <code>meta title</code> and <code>description</code> on a MyLink, those win over these values.', 'wp-mylinks' )
 			);
 			?>
-			<br />
-		</p>
-		<table class="form-table">
-			<tbody>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_enable_schema" for="wp_mylinks_enable_schema"><b><?php esc_html_e( 'Enable JSON-LD Schema?', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input type="checkbox" id="wp_mylinks_enable_schema" name="wp_mylinks_enable_schema" class="my_links_checkbox" value="yes" <?php checked( get_option( 'wp_mylinks_enable_schema' ), 'yes' ); ?>>
-						<?php esc_html_e( 'Yes, Output Schema.org JSON-LD on All MyLinks Pages', 'wp-mylinks' ); ?>
-						<br>
-						<p class="input-description">
-							<?php esc_html_e( 'When enabled, every MyLinks page will include structured data describing you (name, image, description, social profiles).', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_schema_type" for="wp_mylinks_schema_type"><b><?php esc_html_e( 'Default Schema Type', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<?php $schema_type = (string) get_option( 'wp_mylinks_schema_type', 'Person' ); ?>
-						<select id="wp_mylinks_schema_type" name="wp_mylinks_schema_type" class="mylinks_input_select">
-							<option value="Person" <?php selected( $schema_type, 'Person' ); ?>><?php esc_html_e( 'Person (default)', 'wp-mylinks' ); ?></option>
-							<option value="Organization" <?php selected( $schema_type, 'Organization' ); ?>><?php esc_html_e( 'Organization', 'wp-mylinks' ); ?></option>
-						</select>
-						<p class="input-description">
-							<?php esc_html_e( 'Use Person for personal bio pages. Use Organization for businesses, brands, or restaurants. Each MyLink page can override this individually.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_enable_profilepage" for="wp_mylinks_enable_profilepage"><b><?php esc_html_e( 'Wrap in ProfilePage Schema?', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input type="checkbox" id="wp_mylinks_enable_profilepage" name="wp_mylinks_enable_profilepage" class="my_links_checkbox" value="yes" <?php checked( get_option( 'wp_mylinks_enable_profilepage' ), 'yes' ); ?>>
-						<?php esc_html_e( 'Yes, Also Emit ProfilePage Schema Wrapper', 'wp-mylinks' ); ?>
-						<br>
-						<p class="input-description">
-							<?php esc_html_e( 'When enabled, the JSON-LD output is structured as a graph containing both the Person/Organization and a ProfilePage wrapper that points to it. This is the pattern used by major social profile pages (X, GitHub, LinkedIn) and helps search engines and AI tools recognize this URL as a canonical profile page.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<hr>
-
-		<h2 class="section_wp_mylinks"><?php esc_html_e( 'Open Graph & Twitter Card', 'wp-mylinks' ); ?></h2>
-		<p>
+			<div class="wml-field">
+				<label class="wml-field__label" for="mylinks_meta_title"><?php esc_html_e( 'Meta Title', 'wp-mylinks' ); ?></label>
+				<input type="text" id="mylinks_meta_title" name="mylinks_meta_title" class="wml-field__input" value="<?php echo esc_attr( get_option( 'mylinks_meta_title' ) ); ?>" placeholder="<?php esc_attr_e( 'e.g. Your MyLinks Title | Your Site Title', 'wp-mylinks' ); ?>">
+				<p class="wml-field__help"><?php esc_html_e( 'Set the meta title for the MyLinks page.', 'wp-mylinks' ); ?></p>
+			</div>
+			<div class="wml-field">
+				<label class="wml-field__label" for="mylinks_meta_description"><?php esc_html_e( 'Meta Description', 'wp-mylinks' ); ?></label>
+				<textarea id="mylinks_meta_description" name="mylinks_meta_description" class="wml-field__input" rows="4"><?php echo esc_textarea( get_option( 'mylinks_meta_description' ) ); ?></textarea>
+				<p class="wml-field__help"><?php esc_html_e( 'Set the meta description of the MyLinks page.', 'wp-mylinks' ); ?></p>
+			</div>
+			<div class="wml-field">
+				<label class="wml-field__label" for="mylinks_upload_favicon"><?php esc_html_e( 'Custom Favicon', 'wp-mylinks' ); ?></label>
+				<div class="wml-input-row">
+					<input id="mylinks_upload_favicon" class="wml-field__input wp-mylinks-uploader-url" type="text" name="mylinks_upload_favicon" value="<?php echo esc_attr( get_option( 'mylinks_upload_favicon' ) ); ?>" />
+					<input id="upload_image_button" type="button" class="wml-button-secondary" value="<?php esc_attr_e( 'Choose Favicon', 'wp-mylinks' ); ?>" />
+				</div>
+				<p class="wml-field__help"><?php esc_html_e( 'Set a favicon for the MyLinks page.', 'wp-mylinks' ); ?></p>
+			</div>
 			<?php
-			echo wp_kses(
-				__( 'Output <code>og:*</code> and <code>twitter:*</code> meta tags so social-media share previews look correct. If Yoast SEO is active and handling Open Graph itself, this will defer to Yoast automatically. You can override the share image per page on the MyLink editor.', 'wp-mylinks' ),
-				array( 'code' => array() )
+			wp_mylinks_toggle_row(
+				'wp_mylinks_noindex',
+				__( 'Yes, Set to <code>noindex</code>', 'wp-mylinks' ),
+				__( 'This will prevent MyLinks page from being indexed on search engine.', 'wp-mylinks' )
+			);
+			wp_mylinks_toggle_row(
+				'wp_mylinks_nofollow',
+				__( 'Yes, Set to <code>nofollow</code>', 'wp-mylinks' ),
+				__( 'This will ban crawlers to follow all the links on the MyLinks page.', 'wp-mylinks' )
+			);
+			wp_mylinks_card_close();
+
+			wp_mylinks_card_open(
+				'media-code',
+				__( 'Schema.org Structured Data', 'wp-mylinks' ),
+				__( 'Output <code>Person</code> or <code>Organization</code> JSON-LD in the <code>&lt;head&gt;</code> of every MyLinks page so search engines can identify you. If Yoast SEO is active and emitting its own schema, this defers to Yoast automatically. You can override the type per page on the MyLink editor.', 'wp-mylinks' )
+			);
+			wp_mylinks_toggle_row(
+				'wp_mylinks_enable_schema',
+				__( 'Yes, Output Schema.org JSON-LD on All MyLinks Pages', 'wp-mylinks' ),
+				__( 'When enabled, every MyLinks page will include structured data describing you (name, image, description, social profiles).', 'wp-mylinks' )
+			);
+			$schema_type = (string) get_option( 'wp_mylinks_schema_type', 'Person' );
+			?>
+			<div class="wml-field">
+				<label class="wml-field__label" for="wp_mylinks_schema_type"><?php esc_html_e( 'Default Schema Type', 'wp-mylinks' ); ?></label>
+				<select id="wp_mylinks_schema_type" name="wp_mylinks_schema_type">
+					<option value="Person" <?php selected( $schema_type, 'Person' ); ?>><?php esc_html_e( 'Person (default)', 'wp-mylinks' ); ?></option>
+					<option value="Organization" <?php selected( $schema_type, 'Organization' ); ?>><?php esc_html_e( 'Organization', 'wp-mylinks' ); ?></option>
+				</select>
+				<p class="wml-field__help"><?php esc_html_e( 'Use Person for personal bio pages. Use Organization for businesses, brands, or restaurants. Each MyLink page can override this individually.', 'wp-mylinks' ); ?></p>
+			</div>
+			<?php
+			wp_mylinks_toggle_row(
+				'wp_mylinks_enable_profilepage',
+				__( 'Yes, Also Emit ProfilePage Schema Wrapper', 'wp-mylinks' ),
+				__( 'When enabled, the JSON-LD output is structured as a graph containing both the Person/Organization and a ProfilePage wrapper that points to it. This is the pattern used by major social profile pages (X, GitHub, LinkedIn) and helps search engines and AI tools recognize this URL as a canonical profile page.', 'wp-mylinks' )
+			);
+			wp_mylinks_card_close();
+
+			wp_mylinks_card_open(
+				'share',
+				__( 'Open Graph & Twitter Card', 'wp-mylinks' ),
+				__( 'Output <code>og:*</code> and <code>twitter:*</code> meta tags so social-media share previews look correct. If Yoast SEO is active and handling Open Graph itself, this defers to Yoast automatically. You can override the share image per page on the MyLink editor.', 'wp-mylinks' )
+			);
+			wp_mylinks_toggle_row(
+				'wp_mylinks_enable_og',
+				__( 'Yes, Output OG & Twitter Tags on All MyLinks Pages', 'wp-mylinks' ),
+				__( 'When enabled, share previews on Facebook, X (Twitter), LinkedIn, and Discord will show your MyLink page properly.', 'wp-mylinks' )
 			);
 			?>
-			<br />
-		</p>
-		<table class="form-table">
-			<tbody>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_enable_og" for="wp_mylinks_enable_og"><b><?php esc_html_e( 'Enable Open Graph & Twitter Card?', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input type="checkbox" id="wp_mylinks_enable_og" name="wp_mylinks_enable_og" class="my_links_checkbox" value="yes" <?php checked( get_option( 'wp_mylinks_enable_og' ), 'yes' ); ?>>
-						<?php esc_html_e( 'Yes, Output OG & Twitter Tags on All MyLinks Pages', 'wp-mylinks' ); ?>
-						<br>
-						<p class="input-description">
-							<?php esc_html_e( 'When enabled, share previews on Facebook, X (Twitter), LinkedIn, and Discord will show your MyLink page properly.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_og_image" for="wp_mylinks_og_image"><b><?php esc_html_e( 'Default Share Image', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input id="wp_mylinks_og_image" type="text" name="wp_mylinks_og_image" class="wp-mylinks-uploader-url" value="<?php echo esc_attr( get_option( 'wp_mylinks_og_image' ) ); ?>" />
-						<input id="wp_mylinks_og_image_button" type="button" class="button button-secondary wp-mylinks-og-image-uploader" value="<?php esc_attr_e( 'Choose Image', 'wp-mylinks' ); ?>" />
-						<p class="input-description">
-							<?php esc_html_e( 'Recommended size: 1200×630 pixels. If left empty, each MyLink page will fall back to its avatar (which may appear cropped on social previews).', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr class="wp_mylinks_options">
-					<th scope="row">
-						<label class="wp_mylinks_twitter_handle" for="wp_mylinks_twitter_handle"><b><?php esc_html_e( 'Twitter / X Handle', 'wp-mylinks' ); ?></b></label>
-					</th>
-					<td>
-						<input type="text" id="wp_mylinks_twitter_handle" name="wp_mylinks_twitter_handle" class="mylinks_input_text" value="<?php echo esc_attr( get_option( 'wp_mylinks_twitter_handle' ) ); ?>" placeholder="@yourhandle">
-						<p class="input-description">
-							<?php esc_html_e( 'Optional. Used as twitter:site and twitter:creator. The @ is added automatically if missing.', 'wp-mylinks' ); ?>
-						</p>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<hr>
-		<?php submit_button(); ?>
+			<div class="wml-field">
+				<label class="wml-field__label" for="wp_mylinks_og_image"><?php esc_html_e( 'Default Share Image', 'wp-mylinks' ); ?></label>
+				<div class="wml-input-row">
+					<input id="wp_mylinks_og_image" type="text" name="wp_mylinks_og_image" class="wml-field__input wp-mylinks-uploader-url" value="<?php echo esc_attr( get_option( 'wp_mylinks_og_image' ) ); ?>" />
+					<input id="wp_mylinks_og_image_button" type="button" class="wml-button-secondary wp-mylinks-og-image-uploader" value="<?php esc_attr_e( 'Choose Image', 'wp-mylinks' ); ?>" />
+				</div>
+				<p class="wml-field__help"><?php esc_html_e( 'Recommended size: 1200×630 pixels. If left empty, each MyLink page will fall back to its avatar (which may appear cropped on social previews).', 'wp-mylinks' ); ?></p>
+			</div>
+			<div class="wml-field">
+				<label class="wml-field__label" for="wp_mylinks_twitter_handle"><?php esc_html_e( 'Twitter / X Handle', 'wp-mylinks' ); ?></label>
+				<input type="text" id="wp_mylinks_twitter_handle" name="wp_mylinks_twitter_handle" class="wml-field__input" value="<?php echo esc_attr( get_option( 'wp_mylinks_twitter_handle' ) ); ?>" placeholder="@yourhandle">
+				<p class="wml-field__help"><?php esc_html_e( 'Optional. Used as twitter:site and twitter:creator. The @ is added automatically if missing.', 'wp-mylinks' ); ?></p>
+			</div>
+			<?php
+			wp_mylinks_card_close();
+
+			echo '</div>';
+			wp_mylinks_save_bar();
+			?>
 	</form>
 	<?php
 }
 
 /**
- * Render the Tutorial & Support tab.
+ * Render the Scripts tab (settings group: mylinks-custom-scripts).
  */
-function wp_mylinks_render_support_tab() {
-	// Author / project URLs (tracked).
-	$walterpinem_me_url   = wpmylinks_url( 'https://walterpinem.me/' );
-	$walterpinem_com_url  = wpmylinks_url( 'https://walterpinem.com/' );
-	$onlinestorekit_url   = wpmylinks_url( 'https://www.onlinestorekit.com/' );
-	$free_tools_url       = wpmylinks_url( 'https://walterpinem.me/projects/tools/' );
-	$contact_url          = wpmylinks_url( 'https://walterpinem.me/projects/contact/' );
-
-	// External URLs we don't track (third-party platforms).
-	$video_tutorial_url = 'https://www.youtube.com/watch?v=WK03GS5rM0Q&list=PLwazGJFvaLnCZrBRuDeDsbkpjjOPKz4pC';
-	$review_url         = 'https://wordpress.org/support/plugin/wp-mylinks/reviews/?rate=5#new-post';
+function wp_mylinks_render_script_tab() {
 	?>
-	<!-- Tutorial & Support tab -->
-	<div class="wrap">
-		<div class="feature-section one-col wrap about-wrap">
-			<div class="about-text">
-				<h4>
-					<?php
-					echo wp_kses(
-						__( '<strong>WP MyLinks</strong> is Waiting for Your Feedback', 'wp-mylinks' ),
-						array( 'strong' => array() )
-					);
-					?>
-				</h4>
+	<form method="post" action="options.php">
+		<?php
+		settings_errors();
+		settings_fields( 'mylinks-custom-scripts' );
+		do_settings_sections( 'mylinks-custom-scripts' );
+
+		// On multisite, site administrators hold manage_options but not
+		// unfiltered_html, so any <script> they paste here is stripped on save.
+		// Say so plainly rather than let it vanish silently. Custom CSS is
+		// unaffected. No-op on single-site, where admins hold the capability.
+		if ( ! current_user_can( 'unfiltered_html' ) ) {
+			echo '<div class="notice notice-warning inline" style="margin:0 0 20px;"><p>';
+			echo esc_html__( 'Your account can save custom CSS, but raw scripts require the unfiltered_html capability — on a multisite network only a network administrator has it, so any <script> tags you add here will be removed when saved.', 'wp-mylinks' );
+			echo '</p></div>';
+		}
+
+		echo '<div class="wml-settings-grid wml-settings-grid--2col">';
+
+		wp_mylinks_card_open(
+			'chart-bar',
+			__( 'Analytics Tracking Scripts', 'wp-mylinks' ),
+			__( 'Track how the MyLinks page performs with Google Analytics and any other analytics scripts.', 'wp-mylinks' )
+		);
+		wp_mylinks_script_row(
+			'wp_mylinks_analytics',
+			__( 'Analytics Script', 'wp-mylinks' ),
+			__( 'Please include the <code>&lt;script&gt;</code>...<code>&lt;/script&gt;</code> tags.', 'wp-mylinks' ),
+			10
+		);
+		wp_mylinks_card_close();
+
+		wp_mylinks_card_open(
+			'admin-appearance',
+			__( 'Custom Styles', 'wp-mylinks' ),
+			__( 'You can set custom styles for the MyLinks page.', 'wp-mylinks' )
+		);
+		wp_mylinks_script_row(
+			'wp_mylinks_custom_css',
+			__( 'Custom CSS', 'wp-mylinks' ),
+			__( 'Add your custom css code <b>without</b> the <code>&lt;style&gt;</code> tag.', 'wp-mylinks' ),
+			10
+		);
+		wp_mylinks_card_close();
+
+		wp_mylinks_card_open(
+			'editor-code',
+			__( 'Custom Scripts', 'wp-mylinks' ),
+			__( 'You can put about anything you want from Google Tag Manager to Facebook Pixel script in the header and footer sections of the MyLinks page.', 'wp-mylinks' ),
+			true
+		);
+		echo '<div class="wml-script-columns">';
+		wp_mylinks_script_row(
+			'wp_mylinks_header_script',
+			__( 'Header', 'wp-mylinks' ),
+			__( 'Anything you put here will be included in <code>&lt;head&gt;</code>. Please include <code>&lt;script&gt;</code> etc.', 'wp-mylinks' ),
+			10
+		);
+		wp_mylinks_script_row(
+			'wp_mylinks_open_body_script',
+			__( 'After Body Tag', 'wp-mylinks' ),
+			__( 'Inserted script will be placed after the opening <code>&lt;body&gt;</code> tag. Please include the <code>&lt;script&gt;</code>...<code>&lt;/script&gt;</code> tags', 'wp-mylinks' ),
+			10
+		);
+		wp_mylinks_script_row(
+			'wp_mylinks_footer_script',
+			__( 'Footer', 'wp-mylinks' ),
+			__( 'Anything you put here will be placed just before <code>&lt;/body&gt;</code>. Please include <code>&lt;script&gt;</code> etc.', 'wp-mylinks' ),
+			10
+		);
+		echo '</div>';
+		wp_mylinks_card_close();
+
+		wp_mylinks_card_open(
+			'admin-plugins',
+			__( 'Dequeue Other Scripts and Styles', 'wp-mylinks' ),
+			__( '<strong>Experimental!</strong> Some plugins might add additional scripts and styles into the MyLink page, which could result in display issues. By activating this feature, this plugin will forcibly remove all scripts and styles added by other plugins. Should you encounter issues like missing images or styling problems, you may need to enable this.', 'wp-mylinks' ),
+			true
+		);
+		wp_mylinks_toggle_row(
+			'wp_mylinks_dequeue',
+			__( 'Dequeue All Scripts and Styles', 'wp-mylinks' ),
+			__( "This will dequeue other plugins' scripts and styles only on MyLink page.", 'wp-mylinks' )
+		);
+		wp_mylinks_card_close();
+
+		echo '</div>';
+		wp_mylinks_save_bar();
+		?>
+	</form>
+	<?php
+}
+
+/**
+ * Render the Tools tab: import/export plus data management.
+ *
+ * Export and import post to admin-post.php (handlers in
+ * Wp_Mylinks_Tools); the uninstall flag saves through its own settings
+ * group (mylinks-tools) so the General form can never reset it.
+ */
+function wp_mylinks_render_tools_tab() {
+	$mylinks = get_posts(
+		array(
+			'post_type'      => 'mylink',
+			'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
+			'posts_per_page' => -1,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		)
+	);
+	?>
+	<div class="wml-settings-grid wml-settings-grid--2col">
+
+		<?php
+		wp_mylinks_card_open(
+			'download',
+			__( 'Export', 'wp-mylinks' ),
+			__( 'Download your configuration as JSON files you can keep as backups or import on another site. Images are referenced by URL, not bundled.', 'wp-mylinks' )
+		);
+		?>
+		<form method="get" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="wml-tool-form">
+			<input type="hidden" name="action" value="wp_mylinks_export_settings">
+			<?php wp_nonce_field( 'wp_mylinks_export' ); ?>
+			<div class="wml-field">
+				<span class="wml-field__label"><?php esc_html_e( 'Plugin Settings', 'wp-mylinks' ); ?></span>
+				<p class="wml-field__help"><?php esc_html_e( 'Everything on the General, Scripts, and Tools tabs.', 'wp-mylinks' ); ?></p>
+				<button type="submit" class="wml-button-secondary">
+					<span class="dashicons dashicons-download" aria-hidden="true"></span>
+					<?php esc_html_e( 'Export Settings', 'wp-mylinks' ); ?>
+				</button>
 			</div>
-			<div class="indo-about-description">
-				<?php
-				echo wp_kses(
-					__( "<strong>WP MyLinks</strong> is my fourth plugin and it's open source. I acknowledge that there are still a lot to fix, here and there, that's why I really need your feedback. <br>Send a feedback through some of below options to contact me:", 'wp-mylinks' ),
-					array(
-						'strong' => array(),
-						'br'     => array(),
-					)
-				);
-				?>
+		</form>
+
+		<form method="get" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="wml-tool-form">
+			<input type="hidden" name="action" value="wp_mylinks_export_pages">
+			<?php wp_nonce_field( 'wp_mylinks_export' ); ?>
+			<div class="wml-field">
+				<label class="wml-field__label" for="wml-export-status"><?php esc_html_e( 'MyLink Pages', 'wp-mylinks' ); ?></label>
+				<p class="wml-field__help"><?php esc_html_e( 'Every page with its full configuration, filtered by status.', 'wp-mylinks' ); ?></p>
+				<div class="wml-input-row">
+					<select id="wml-export-status" name="status">
+						<option value="any"><?php esc_html_e( 'All statuses', 'wp-mylinks' ); ?></option>
+						<option value="publish"><?php esc_html_e( 'Published', 'wp-mylinks' ); ?></option>
+						<option value="draft"><?php esc_html_e( 'Draft', 'wp-mylinks' ); ?></option>
+						<option value="pending"><?php esc_html_e( 'Pending', 'wp-mylinks' ); ?></option>
+						<option value="private"><?php esc_html_e( 'Private', 'wp-mylinks' ); ?></option>
+					</select>
+					<button type="submit" class="wml-button-secondary">
+						<span class="dashicons dashicons-download" aria-hidden="true"></span>
+						<?php esc_html_e( 'Export Pages', 'wp-mylinks' ); ?>
+					</button>
+				</div>
+				<label class="wml-checkbox-row">
+					<input type="checkbox" name="include_collections" value="1" checked>
+					<?php esc_html_e( 'Include Link Collections', 'wp-mylinks' ); ?>
+				</label>
 			</div>
+		</form>
 
-			<table class="tg" style="table-layout: fixed; width: 100%;">
-				<colgroup>
-					<col style="width: 80px">
-					<col style="width: 500px">
-				</colgroup>
-				<tr>
-					<th class="tg-kiyi"><?php esc_html_e( 'Author:', 'wp-mylinks' ); ?></th>
-					<th class="tg-fymr"><?php esc_html_e( 'Walter Pinem', 'wp-mylinks' ); ?></th>
-				</tr>
-				<tr>
-					<td class="tg-kiyi"><?php esc_html_e( 'Website:', 'wp-mylinks' ); ?></td>
-					<td class="tg-fymr">
-						<a href="<?php echo esc_url( $walterpinem_me_url ); ?>" title="<?php esc_attr_e( 'Visit walterpinem.me', 'wp-mylinks' ); ?>" target="_blank" rel="noopener">
-							<?php esc_html_e( 'walterpinem.me', 'wp-mylinks' ); ?>
-						</a>
-					</td>
-				</tr>
-				<tr>
-					<td class="tg-kiyi"></td>
-					<td class="tg-fymr">
-						<a href="<?php echo esc_url( $walterpinem_com_url ); ?>" title="<?php esc_attr_e( 'Visit walterpinem.com', 'wp-mylinks' ); ?>" target="_blank" rel="noopener">
-							<?php esc_html_e( 'walterpinem.com', 'wp-mylinks' ); ?>
-						</a>
-					</td>
-				</tr>
-				<tr>
-					<td class="tg-kiyi"></td>
-					<td class="tg-fymr">
-						<a href="<?php echo esc_url( $onlinestorekit_url ); ?>" title="<?php esc_attr_e( 'Online Store Kit', 'wp-mylinks' ); ?>" target="_blank" rel="noopener">
-							<?php esc_html_e( 'Online Store Kit', 'wp-mylinks' ); ?>
-						</a>
-					</td>
-				</tr>
-				<tr>
-					<td class="tg-kiyi"></td>
-					<td class="tg-fymr">
-						<a href="<?php echo esc_url( $free_tools_url ); ?>" title="<?php esc_attr_e( '100+ Free Online Tools', 'wp-mylinks' ); ?>" target="_blank" rel="noopener">
-							<?php esc_html_e( '100+ Free Online Tools', 'wp-mylinks' ); ?>
-						</a>
-					</td>
-				</tr>
-				<tr>
-					<td class="tg-kiyi"><?php esc_html_e( 'More:', 'wp-mylinks' ); ?></td>
-					<td class="tg-fymr">
-						<a href="<?php echo esc_url( $video_tutorial_url ); ?>" title="<?php esc_attr_e( 'Complete YouTube Tutorial', 'wp-mylinks' ); ?>" target="_blank" rel="noopener">
-							<?php esc_html_e( 'Video Tutorial', 'wp-mylinks' ); ?>
-						</a>
-					</td>
-				</tr>
-				<tr>
-					<td class="tg-kiyi" rowspan="2"></td>
-					<td class="tg-fymr">
-						<a href="<?php echo esc_url( $contact_url ); ?>" title="<?php esc_attr_e( 'Support & Feature Request', 'wp-mylinks' ); ?>" target="_blank" rel="noopener">
-							<?php esc_html_e( 'Support & Feature Request', 'wp-mylinks' ); ?>
-						</a>
-					</td>
-				</tr>
-				<tr>
-					<td class="tg-fymr">
-						<a href="<?php echo esc_url( $review_url ); ?>" title="<?php esc_attr_e( 'Leave a Review', 'wp-mylinks' ); ?>" target="_blank" rel="noopener">
-							<?php esc_html_e( 'Leave a Review', 'wp-mylinks' ); ?>
-						</a>
-					</td>
-				</tr>
-			</table>
+		<?php if ( ! empty( $mylinks ) ) : ?>
+			<form method="get" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="wml-tool-form">
+				<input type="hidden" name="action" value="wp_mylinks_export_page">
+				<div class="wml-field">
+					<label class="wml-field__label" for="wml-export-single"><?php esc_html_e( 'Single Page', 'wp-mylinks' ); ?></label>
+					<p class="wml-field__help"><?php esc_html_e( 'One page with its full configuration. Also available on each MyLink editor screen.', 'wp-mylinks' ); ?></p>
+					<div class="wml-input-row">
+						<select id="wml-export-single" name="post_id" class="wml-export-single">
+							<?php foreach ( $mylinks as $wml_post ) : ?>
+								<option value="<?php echo esc_attr( $wml_post->ID ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_mylinks_export_page_' . $wml_post->ID ) ); ?>">
+									<?php echo esc_html( $wml_post->post_title ? $wml_post->post_title : ( '#' . $wml_post->ID ) ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+						<button type="submit" class="wml-button-secondary">
+							<span class="dashicons dashicons-download" aria-hidden="true"></span>
+							<?php esc_html_e( 'Export Page', 'wp-mylinks' ); ?>
+						</button>
+					</div>
+				</div>
+			</form>
+		<?php endif; ?>
+		<?php wp_mylinks_card_close(); ?>
 
-			<br>
-			<hr>
+		<?php
+		wp_mylinks_card_open(
+			'upload',
+			__( 'Import', 'wp-mylinks' ),
+			__( 'Upload a WP MyLinks export file. Settings files overwrite the matching options; page files are always imported as <strong>new</strong> pages, so nothing existing is overwritten.', 'wp-mylinks' )
+		);
+		?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data" class="wml-tool-form">
+			<input type="hidden" name="action" value="wp_mylinks_import">
+			<?php wp_nonce_field( 'wp_mylinks_import' ); ?>
+			<div class="wml-field">
+				<span class="wml-field__label"><?php esc_html_e( 'Export File (.json)', 'wp-mylinks' ); ?></span>
+				<p class="wml-field__help"><?php esc_html_e( 'Accepts any WP MyLinks export: settings, pages, or a single page.', 'wp-mylinks' ); ?></p>
+				<label class="wml-file-drop">
+					<input type="file" id="wml-import-file" name="wp_mylinks_import_file" accept=".json,application/json" required>
+					<span class="wml-file-drop__icon dashicons dashicons-upload" aria-hidden="true"></span>
+					<span class="wml-file-drop__text">
+						<strong><?php esc_html_e( 'Choose a .json export file', 'wp-mylinks' ); ?></strong>
+						<small><?php esc_html_e( 'or drag and drop it here', 'wp-mylinks' ); ?></small>
+					</span>
+				</label>
+				<button type="submit" class="wml-button-primary">
+					<span class="dashicons dashicons-upload" aria-hidden="true"></span>
+					<?php esc_html_e( 'Import', 'wp-mylinks' ); ?>
+				</button>
+			</div>
+		</form>
+		<?php wp_mylinks_card_close(); ?>
 
-			<?php echo do_shortcode( '[donate]' ); ?>
+		<?php
+		$wml_selectable = wp_mylinks_selectable_link_post_types();
+		$wml_selected   = wp_mylinks_get_link_post_types();
+		wp_mylinks_card_open(
+			'admin-links',
+			__( 'Link URL Sources', 'wp-mylinks' ),
+			__( 'Choose which post types appear in the <strong>Link URL</strong> picker when you build a MyLink page. Link Collections are always available.', 'wp-mylinks' )
+		);
+		?>
+		<form method="post" action="options.php" class="wml-tool-form">
+			<?php settings_fields( 'mylinks-link-sources' ); ?>
+			<div class="wml-field">
+				<span class="wml-field__label"><?php esc_html_e( 'Included Post Types', 'wp-mylinks' ); ?></span>
+				<p class="wml-field__help"><?php esc_html_e( 'New public post types registered by plugins or themes appear here automatically. Uncheck any you do not want to link to.', 'wp-mylinks' ); ?></p>
+				<div class="wml-posttype-grid">
+					<?php foreach ( $wml_selectable as $wml_slug => $wml_label ) : ?>
+						<label class="wml-posttype">
+							<input type="checkbox" name="wp_mylinks_link_post_types[]" value="<?php echo esc_attr( $wml_slug ); ?>" <?php checked( in_array( $wml_slug, $wml_selected, true ) ); ?>>
+							<span class="wml-posttype__body">
+								<span class="wml-posttype__name"><?php echo esc_html( $wml_label ); ?></span>
+								<code class="wml-posttype__slug"><?php echo esc_html( $wml_slug ); ?></code>
+							</span>
+						</label>
+					<?php endforeach; ?>
+					<label class="wml-posttype wml-posttype--locked" title="<?php esc_attr_e( 'Link Collections are always available and cannot be turned off.', 'wp-mylinks' ); ?>">
+						<input type="checkbox" checked disabled>
+						<span class="wml-posttype__body">
+							<span class="wml-posttype__name"><?php esc_html_e( 'Link Collections', 'wp-mylinks' ); ?></span>
+							<code class="wml-posttype__slug">mylinks-collection</code>
+						</span>
+					</label>
+				</div>
+			</div>
+			<button type="submit" class="wml-button-primary"><?php esc_html_e( 'Save Changes', 'wp-mylinks' ); ?></button>
+		</form>
+		<?php wp_mylinks_card_close(); ?>
 
-			<?php wp_mylinks_render_credit_line(); ?>
-		</div>
+		<?php
+		wp_mylinks_card_open(
+			'database',
+			__( 'Data Management', 'wp-mylinks' ),
+			__( 'What happens to your data when the plugin is removed.', 'wp-mylinks' )
+		);
+		?>
+		<form method="post" action="options.php" class="wml-tool-form">
+			<?php settings_fields( 'mylinks-tools' ); ?>
+			<?php
+			wp_mylinks_toggle_row(
+				'wp_mylinks_delete_data_on_uninstall',
+				__( 'Yes, Delete All Plugin Data on Uninstall', 'wp-mylinks' ),
+				__( 'When enabled, deleting the plugin from the Plugins screen will remove all WP MyLinks settings and oEmbed caches. MyLink posts and their content are preserved by default. Leave this unchecked to keep your settings if you ever uninstall and reinstall.', 'wp-mylinks' )
+			);
+			?>
+			<button type="submit" class="wml-button-primary"><?php esc_html_e( 'Save Changes', 'wp-mylinks' ); ?></button>
+		</form>
+		<?php wp_mylinks_card_close(); ?>
+
 	</div>
 	<?php
 }
 
 /**
- * Render the Welcome tab.
+ * Render the Support tab.
  */
-function wp_mylinks_render_welcome_tab() {
-	$images_url = plugin_dir_url( dirname( __FILE__ ) ) . 'images/';
+function wp_mylinks_render_support_tab() {
+	// Author / project URLs (tracked — our own properties only).
+	$walterpinem_me_url  = wpmylinks_url( 'https://walterpinem.me/' );
+	$walterpinem_com_url = wpmylinks_url( 'https://walterpinem.com/' );
+	$onlinestorekit_url  = wpmylinks_url( 'https://www.onlinestorekit.com/' );
+	$free_tools_url      = wpmylinks_url( 'https://walterpinem.me/projects/tools/' );
+	$contact_url         = wpmylinks_url( 'https://www.onlinestorekit.com/support/' );
 
-	// All these go through wpmylinks_url() because they point at the author's
-	// own properties and benefit from the tracking parameters.
-	$inquiry_url = wpmylinks_url( 'https://walterpinem.me/projects/customization-service/' );
+	// External URLs we don't track (third-party platforms).
+	$video_tutorial_url = 'https://www.youtube.com/watch?v=WK03GS5rM0Q&list=PLwazGJFvaLnCZrBRuDeDsbkpjjOPKz4pC';
+	$review_url         = 'https://wordpress.org/support/plugin/wp-mylinks/reviews/?rate=5#new-post';
+
+	$links = array(
+		array( $contact_url, __( 'Support & Feature Request', 'wp-mylinks' ) ),
+		array( $video_tutorial_url, __( 'Video Tutorial', 'wp-mylinks' ) ),
+		array( $review_url, __( 'Leave a Review', 'wp-mylinks' ) ),
+		array( $walterpinem_me_url, __( 'walterpinem.me', 'wp-mylinks' ) ),
+		array( $walterpinem_com_url, __( 'walterpinem.com', 'wp-mylinks' ) ),
+		array( $onlinestorekit_url, __( 'Online Store Kit', 'wp-mylinks' ) ),
+		array( $free_tools_url, __( '240+ Free Online Tools', 'wp-mylinks' ) ),
+	);
 	?>
-	<!-- Begin creating plugin admin page -->
-	<div class="wrap">
-		<div class="feature-section one-col wrap about-wrap">
-			<div class="mylinks-title">
-				<h2>
-					<?php
-					echo wp_kses(
-						__( 'Thank You For Using<br> WP MyLinks', 'wp-mylinks' ),
-						array( 'br' => array() )
-					);
-					?>
-				</h2>
-				<img src="<?php echo esc_url( $images_url . 'wp-mylinks.png' ); ?>" alt="<?php esc_attr_e( 'WP MyLinks', 'wp-mylinks' ); ?>" />
-			</div>
+	<div class="wml-settings-grid">
 
-			<div class="feature-section one-col about-text">
-				<h3><?php esc_html_e( 'Build Fully Customizable Micro Landing Pages For Your Brand!', 'wp-mylinks' ); ?></h3>
-			</div>
-			<div class="feature-section one-col indo-about-description">
+		<?php
+		wp_mylinks_card_open(
+			'sos',
+			__( 'WP MyLinks is Waiting for Your Feedback', 'wp-mylinks' ),
+			__( 'This plugin is open source and shaped by its users — feature requests, bug reports, and reviews all directly steer the roadmap.', 'wp-mylinks' )
+		);
+		?>
+			<ul class="wml-check">
+				<?php foreach ( $links as $link ) : ?>
+					<li>
+						<span class="dashicons dashicons-arrow-right-alt2" aria-hidden="true"></span>
+						<a href="<?php echo esc_url( $link[0] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $link[1] ); ?></a>
+					</li>
+				<?php endforeach; ?>
+			</ul>
+			<p class="wml-field__help">
 				<?php
-				echo wp_kses(
-					__( "<strong>WP MyLinks</strong> can help you create a micro landing page that contains all the links you want to share to your audience with the tool you're currently using and the domain name that reflects your own brand. Share one single link for everything!", 'wp-mylinks' ),
-					array( 'strong' => array() )
+				printf(
+					/* translators: %s: author name */
+					esc_html__( 'Author: %s', 'wp-mylinks' ),
+					'<strong>Walter Pinem</strong>' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static markup.
 				);
 				?>
-			</div>
-			<div class="clear"></div>
-			<hr />
+			</p>
+		<?php wp_mylinks_card_close(); ?>
 
-			<div class="feature-section one-col">
-				<h3 style="text-align: center;"><?php esc_html_e( 'Watch the Complete Overview and Tutorial', 'wp-mylinks' ); ?></h3>
-				<div class="headline-feature feature-video">
-					<div class="embed-container">
-						<iframe src="https://www.youtube.com/embed/?listType=playlist&list=PLwazGJFvaLnCZrBRuDeDsbkpjjOPKz4pC" frameborder="0" allowfullscreen title="<?php esc_attr_e( 'WP MyLinks Tutorial', 'wp-mylinks' ); ?>"></iframe>
-					</div>
-				</div>
-			</div>
-			<div class="clear"></div>
-			<hr />
-
-			<div class="feature-section one-col">
-				<div class="indo-get-started">
-					<h3><?php esc_html_e( "Let's Get Started", 'wp-mylinks' ); ?></h3>
-					<ul>
-						<li><strong><?php esc_html_e( 'Step #1:', 'wp-mylinks' ); ?></strong>
-							<?php
-							echo wp_kses(
-								__( 'Build your very first micro landing page on <a href="post-new.php?post_type=mylink" target="_blank"><strong>New MyLink</strong></a> page.', 'wp-mylinks' ),
-								array(
-									'a'      => array(
-										'href'   => array(),
-										'target' => array(),
-									),
-									'strong' => array(),
-								)
-							);
-							?>
-						</li>
-						<li><strong><?php esc_html_e( 'Step #2:', 'wp-mylinks' ); ?></strong> <?php esc_html_e( 'Setup your profile including avatar, description, and social media links.', 'wp-mylinks' ); ?></li>
-						<li><strong><?php esc_html_e( 'Step #3:', 'wp-mylinks' ); ?></strong> <?php esc_html_e( 'Add unlimited number of links you want to share to your audience.', 'wp-mylinks' ); ?></li>
-						<li><strong><?php esc_html_e( 'Step #4:', 'wp-mylinks' ); ?></strong> <?php esc_html_e( 'Choose a theme that matches your personal or business brand.', 'wp-mylinks' ); ?></li>
-						<li><strong><?php esc_html_e( 'Step #5:', 'wp-mylinks' ); ?></strong>
-							<?php
-							echo wp_kses(
-								__( 'Setup global settings for your micro landing pages on <a href="edit.php?post_type=mylink&page=welcome&tab=global" target="_blank"><strong>Global Configurations</strong></a> setting panel.', 'wp-mylinks' ),
-								array(
-									'a'      => array(
-										'href'   => array(),
-										'target' => array(),
-									),
-									'strong' => array(),
-								)
-							);
-							?>
-						</li>
-						<li><strong><?php esc_html_e( 'Step #6:', 'wp-mylinks' ); ?></strong>
-							<?php
-							echo wp_kses(
-								__( 'Add custom styles and scripts to your micro landing pages on <a href="edit.php?post_type=mylink&page=welcome&tab=script" target="_blank"><strong>Custom Script</strong></a> setting panel.', 'wp-mylinks' ),
-								array(
-									'a'      => array(
-										'href'   => array(),
-										'target' => array(),
-									),
-									'strong' => array(),
-								)
-							);
-							?>
-						</li>
-						<li><strong><?php esc_html_e( 'Step #7:', 'wp-mylinks' ); ?></strong>
-							<?php
-							echo wp_kses(
-								__( '<strong>Have an inquiry?</strong> Find out how to reach out to me on <a href="edit.php?post_type=mylink&page=welcome&tab=tutorial_support" target="_blank"><strong>Support</strong></a> panel.', 'wp-mylinks' ),
-								array(
-									'a'      => array(
-										'href'   => array(),
-										'target' => array(),
-									),
-									'strong' => array(),
-								)
-							);
-							?>
-						</li>
-					</ul>
-					<hr />
-					<p><?php esc_html_e( 'If you encounter 404 page not found issue, please follow the steps below:', 'wp-mylinks' ); ?></p>
-					<ol>
-						<li>
-							<?php
-							echo wp_kses(
-								__( 'Go to <b>Settings</b> => <a href="options-permalink.php"><b>Permalinks</b></a> page.', 'wp-mylinks' ),
-								array(
-									'b' => array(),
-									'a' => array( 'href' => array() ),
-								)
-							);
-							?>
-						</li>
-						<li>
-							<?php
-							echo wp_kses(
-								__( 'Click the <b>Save Changes</b> button without having to change anything.', 'wp-mylinks' ),
-								array( 'b' => array() )
-							);
-							?>
-						</li>
-						<li><?php esc_html_e( 'Recheck your MyLink page. The issue will most likely disappear.', 'wp-mylinks' ); ?></li>
-					</ol>
-					<p><?php esc_html_e( 'If the problem persists, you might also want to make sure that you are using pretty permalinks (Post name), but be careful! Changing your current permalinks structure to another will affect your entire URLs, and will be very bad for SEO!', 'wp-mylinks' ); ?></p>
-				</div>
-			</div>
-			<hr>
-
-			<div class="feature-section two-col">
-				<div class="col">
-					<img src="<?php echo esc_url( $images_url . 'unlimited.png' ); ?>" alt="" />
-					<h3><?php esc_html_e( 'Unlimited Landing Pages', 'wp-mylinks' ); ?></h3>
-					<p><?php esc_html_e( 'Build unlimited number of micro landing pages that host unlimited number of links.', 'wp-mylinks' ); ?></p>
-				</div>
-				<div class="col">
-					<img src="<?php echo esc_url( $images_url . 'one-link.png' ); ?>" alt="" />
-					<h3><?php esc_html_e( 'One Link for Everything', 'wp-mylinks' ); ?></h3>
-					<p><?php esc_html_e( 'Every created micro landing page will have one link that you can share anywhere on your networks.', 'wp-mylinks' ); ?></p>
-				</div>
-			</div>
-
-			<div class="feature-section two-col">
-				<div class="col">
-					<img src="<?php echo esc_url( $images_url . 'own-brand.png' ); ?>" alt="" />
-					<h3><?php esc_html_e( 'Use Your Own Brand', 'wp-mylinks' ); ?></h3>
-					<p><?php esc_html_e( 'You already have your own brand through a domain name. Use it on your micro landing page and get boosted!', 'wp-mylinks' ); ?></p>
-				</div>
-				<div class="col">
-					<img src="<?php echo esc_url( $images_url . 'custom-themes.png' ); ?>" alt="" />
-					<h3><?php esc_html_e( '15+ Themes to Choose From', 'wp-mylinks' ); ?></h3>
-					<p><?php esc_html_e( 'Choose a theme that can represent your brand or taste. Or you can also add custom CSS to use your own.', 'wp-mylinks' ); ?></p>
-				</div>
-			</div>
-
-			<div class="feature-section two-col">
-				<div class="col">
-					<img src="<?php echo esc_url( $images_url . 'custom-scripts.png' ); ?>" alt="" />
-					<h3><?php esc_html_e( 'Custom Scripts & Styles', 'wp-mylinks' ); ?></h3>
-					<p><?php esc_html_e( 'Track how every landing page performs easily with Google Analytics, Facebook Pixel etc or customize the look. You have the options.', 'wp-mylinks' ); ?></p>
-				</div>
-				<div class="col">
-					<img src="<?php echo esc_url( $images_url . 'documentation.png' ); ?>" alt="" />
-					<h3><?php esc_html_e( 'Comprehensive Documentation', 'wp-mylinks' ); ?></h3>
-					<p><?php esc_html_e( 'You will not be left alone. My complete documentation or tutorial will always help and support all your needs to get started.', 'wp-mylinks' ); ?></p>
-				</div>
-			</div>
-
-			<br>
-			<hr>
-
+		<?php wp_mylinks_card_open( 'heart', __( 'Support the Project', 'wp-mylinks' ) ); ?>
 			<?php echo do_shortcode( '[donate]' ); ?>
-
 			<?php wp_mylinks_render_credit_line(); ?>
-		</div>
+		<?php wp_mylinks_card_close(); ?>
+
 	</div>
-	<br>
 	<?php
 }

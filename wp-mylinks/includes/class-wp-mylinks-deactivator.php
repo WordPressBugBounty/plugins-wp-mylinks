@@ -10,7 +10,7 @@
  * @subpackage Wp_Mylinks/includes
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined('ABSPATH') ) {
 	exit;
 }
 
@@ -30,8 +30,8 @@ if (!defined('ABSPATH')) {
  *
  * @since 1.0.0
  */
-class Wp_Mylinks_Deactivator
-{
+class Wp_Mylinks_Deactivator {
+
 
 	/**
 	 * Deactivation routine.
@@ -41,13 +41,12 @@ class Wp_Mylinks_Deactivator
 	 *
 	 * @since 1.0.5
 	 */
-	public static function deactivate()
-	{
+	public static function deactivate() {
 		// Unregister the post type so its rewrite rules are dropped.
-		if (post_type_exists('mylink')) {
+		if ( post_type_exists('mylink') ) {
 			unregister_post_type('mylink');
 		}
-		if (post_type_exists('mylinks-collection')) {
+		if ( post_type_exists('mylinks-collection') ) {
 			unregister_post_type('mylinks-collection');
 		}
 

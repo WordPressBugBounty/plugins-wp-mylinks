@@ -51,8 +51,16 @@ $wp_mylinks_allowed_script_tags = array(
 		'data-*'      => true,
 	),
 	'noscript' => array(),
-	'div'      => array( 'id' => array(), 'class' => array(), 'style' => array() ),
-	'span'     => array( 'id' => array(), 'class' => array(), 'style' => array() ),
+	'div'      => array(
+		'id'    => array(),
+		'class' => array(),
+		'style' => array(),
+	),
+	'span'     => array(
+		'id'    => array(),
+		'class' => array(),
+		'style' => array(),
+	),
 	'iframe'   => array(
 		'src'             => array(),
 		'width'           => array(),
@@ -65,8 +73,18 @@ $wp_mylinks_allowed_script_tags = array(
 		'referrerpolicy'  => array(),
 		'sandbox'         => array(),
 	),
-	'a'        => array( 'href' => array(), 'target' => array(), 'rel' => array() ),
-	'img'      => array( 'src' => array(), 'alt' => array(), 'width' => array(), 'height' => array(), 'loading' => array() ),
+	'a'        => array(
+		'href'   => array(),
+		'target' => array(),
+		'rel'    => array(),
+	),
+	'img'      => array(
+		'src'     => array(),
+		'alt'     => array(),
+		'width'   => array(),
+		'height'  => array(),
+		'loading' => array(),
+	),
 	'p'        => array(),
 	'br'       => array(),
 	'strong'   => array(),
@@ -87,6 +105,31 @@ $wp_mylinks_resolve = static function ( $post_meta_key, $option_key, $fallback =
 		return $value;
 	}
 	return $fallback;
+};
+
+/**
+ * Resolve a raw-script value (per-page meta, else the global option), gating
+ * the PER-PAGE portion on whether the page's author is trusted with raw markup.
+ *
+ * The save-time capability gate (1.1.0) stops untrusted users from storing
+ * <script> going forward, but per-page script fields existed pre-1.1.0 as a
+ * raw passthrough, so a multisite Editor could have stored JavaScript before
+ * the fix. This neutralizes such legacy per-page scripts at render — output
+ * them verbatim only when the page author still holds `unfiltered_html`, else
+ * strip active markup with wp_kses_post. No-op on single-site (Editors/Admins
+ * hold the capability). The global option fallback is admin-set (manage_options)
+ * and carries no per-page author, so it is returned unchanged.
+ */
+$wp_mylinks_resolve_script = static function ( $post_meta_key, $option_key ) use ( $post_id ) {
+	$value = $post_id ? get_post_meta( $post_id, $post_meta_key, true ) : '';
+	if ( '' !== $value && null !== $value ) {
+		if ( $post_id && author_can( $post_id, 'unfiltered_html' ) ) {
+			return $value;
+		}
+		return wp_kses_post( $value );
+	}
+	$value = get_option( $option_key );
+	return ( '' !== $value && null !== $value && false !== $value ) ? $value : '';
 };
 
 /**
@@ -114,7 +157,10 @@ $wp_mylinks_build_socials = static function ( $indent = '    ', $post_id = 0 ) {
 		if ( empty( $url ) ) {
 			continue;
 		}
-		$icon_url = ! empty( $icon ) ? $icon : $plugin_images . $platform . '.png';
+		// Default icons became SVG chips in 1.1.0; a user-uploaded custom icon
+		// always wins. The legacy PNGs stay shipped for anyone who pasted
+		// their URLs into custom icon fields.
+		$icon_url = ! empty( $icon ) ? $icon : $plugin_images . $platform . '.svg';
 
 		$aria_label = sprintf(
 			/* translators: %s: social platform name (Twitter, Facebook, etc.) */
@@ -135,7 +181,7 @@ $wp_mylinks_build_socials = static function ( $indent = '    ', $post_id = 0 ) {
 	}
 
 	// 2) Additional Social Platforms repeater (1.0.8+).
-	if ( $post_id > 0 && function_exists( 'wp_mylinks_collect_socials' ) ) {
+	if ( $post_id > 0 ) {
 		$additional = get_post_meta( $post_id, mylinks_prefix( 'additional-socials' ), true );
 		if ( is_array( $additional ) ) {
 			$fallback_icon = $plugin_images . 'globe.svg';
@@ -143,13 +189,13 @@ $wp_mylinks_build_socials = static function ( $indent = '    ', $post_id = 0 ) {
 				if ( ! is_array( $row ) ) {
 					continue;
 				}
-				$name = isset( $row['name'] ) ? trim( (string) $row['name'] ) : '';
-				$url  = isset( $row['url'] ) ? trim( (string) $row['url'] ) : '';
-				$icon = isset( $row['icon'] ) ? trim( (string) $row['icon'] ) : '';
+				$name       = isset( $row['name'] ) ? trim( (string) $row['name'] ) : '';
+				$url        = isset( $row['url'] ) ? trim( (string) $row['url'] ) : '';
+				$icon       = isset( $row['icon'] ) ? trim( (string) $row['icon'] ) : '';
+				$icon_class = isset( $row['icon-class'] ) ? trim( (string) $row['icon-class'] ) : '';
 				if ( '' === $url || '' === $name ) {
 					continue;
 				}
-				$icon_url = '' !== $icon ? $icon : $fallback_icon;
 
 				$aria_label = sprintf(
 					/* translators: %s: social platform name (Twitter, Facebook, etc.) */
@@ -157,15 +203,39 @@ $wp_mylinks_build_socials = static function ( $indent = '    ', $post_id = 0 ) {
 					$name
 				);
 
+				// Priority: uploaded image, then an icon-font class (1.1.0, the
+				// icon shows only if the user's site loads that font), then the
+				// bundled globe fallback.
+				if ( '' !== $icon ) {
+					$icon_markup = sprintf(
+						'%1$s    <img class="mylinks-social-icons" width="32" height="32" src="%2$s" alt="%3$s">',
+						$indent,
+						esc_url( $icon ),
+						esc_attr( $name )
+					);
+				} elseif ( '' !== $icon_class ) {
+					$icon_markup = sprintf(
+						'%1$s    <i class="mylinks-social-icons mylinks-social-icon-font %2$s" aria-hidden="true"></i>',
+						$indent,
+						esc_attr( $icon_class )
+					);
+				} else {
+					$icon_markup = sprintf(
+						'%1$s    <img class="mylinks-social-icons" width="32" height="32" src="%2$s" alt="%3$s">',
+						$indent,
+						esc_url( $fallback_icon ),
+						esc_attr( $name )
+					);
+				}
+
 				$items[] = sprintf(
-					'%1$s  <a href="%2$s" target="_blank" rel="noopener noreferrer nofollow" class="user-profile-link" aria-label="%5$s">' . "\n"
-					. '%1$s    <img class="mylinks-social-icons" width="32" height="32" src="%3$s" alt="%4$s">' . "\n"
+					'%1$s  <a href="%2$s" target="_blank" rel="noopener noreferrer nofollow" class="user-profile-link" aria-label="%3$s">' . "\n"
+					. '%4$s' . "\n"
 					. '%1$s  </a>',
 					$indent,
 					esc_url( $url ),
-					esc_url( $icon_url ),
-					esc_attr( $name ),
-					esc_attr( $aria_label )
+					esc_attr( $aria_label ),
+					$icon_markup
 				);
 			}
 		}
@@ -211,9 +281,9 @@ $global_favicon = (string) get_option( 'mylinks_upload_favicon', '' );
 $favicon        = '' !== $single_favicon ? $single_favicon : $global_favicon;
 
 $analytics_script = (string) get_option( 'wp_mylinks_analytics', '' );
-$header_script    = $wp_mylinks_resolve( mylinks_prefix( 'mylinks-single-custom-header-script' ), 'wp_mylinks_header_script', '' );
+$header_script    = $wp_mylinks_resolve_script( mylinks_prefix( 'mylinks-single-custom-header-script' ), 'wp_mylinks_header_script' );
 $body_script      = (string) get_option( 'wp_mylinks_open_body_script', '' );
-$footer_script    = $wp_mylinks_resolve( mylinks_prefix( 'mylinks-single-custom-footer-script' ), 'wp_mylinks_footer_script', '' );
+$footer_script    = $wp_mylinks_resolve_script( mylinks_prefix( 'mylinks-single-custom-footer-script' ), 'wp_mylinks_footer_script' );
 $custom_css       = $wp_mylinks_resolve( mylinks_prefix( 'mylinks-single-custom-styles' ), 'wp_mylinks_custom_css', '' );
 $avatar_style     = $post_id ? (string) get_post_meta( $post_id, mylinks_prefix( 'avatar-style' ), true ) : '';
 
@@ -262,6 +332,27 @@ $inline_css_chunks = array(
 	'.youtube-player .play{background:url(' . esc_url( $play_icon_path ) . ') no-repeat;}',
 	$avatar_inline_css,
 );
+
+// Accent color overrides (F8, 1.1.0) — empty when no accent is set, so the
+// active theme stays untouched by default.
+if ( function_exists( 'wp_mylinks_accent_css' ) ) {
+	$accent_css = wp_mylinks_accent_css( $post_id );
+	if ( '' !== $accent_css ) {
+		$inline_css_chunks[] = $accent_css;
+	}
+}
+
+// Custom font family (1.1.0), per-page over global. Re-sanitized here so a
+// stray brace or semicolon can never break out of the scoped declaration,
+// regardless of how the stored value got there.
+$font_family = $wp_mylinks_resolve( mylinks_prefix( 'font-family' ), 'wp_mylinks_font_family', '' );
+if ( '' !== $font_family && function_exists( 'wp_mylinks_sanitize_font_family' ) ) {
+	$font_family = wp_mylinks_sanitize_font_family( $font_family );
+	if ( '' !== $font_family ) {
+		$inline_css_chunks[] = '.mylinks-body{font-family:' . $font_family . '}';
+	}
+}
+
 if ( '' !== $custom_css ) {
 	$inline_css_chunks[] = wp_strip_all_tags( $custom_css );
 }
@@ -297,10 +388,10 @@ if ( 'yes' === get_option( 'wp_mylinks_enable_og' ) ) {
 	if ( ! $skip_og ) {
 		$og_lines = array();
 
-		$og_title = '' !== $meta_title ? $meta_title : (string) get_the_title();
-		$og_desc  = $meta_description;
-		$og_url   = $post_id > 0 ? (string) get_permalink( $post_id ) : '';
-		$og_image = function_exists( 'wp_mylinks_resolve_og_image' )
+		$og_title  = '' !== $meta_title ? $meta_title : (string) get_the_title();
+		$og_desc   = $meta_description;
+		$og_url    = $post_id > 0 ? (string) get_permalink( $post_id ) : '';
+		$og_image  = function_exists( 'wp_mylinks_resolve_og_image' )
 			? wp_mylinks_resolve_og_image( $post_id )
 			: '';
 		$site_name = (string) get_bloginfo( 'name' );
@@ -366,22 +457,22 @@ if ( 'yes' === get_option( 'wp_mylinks_enable_og' ) ) {
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
-  <meta charset="<?php bloginfo( 'charset' ); ?>">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="generator" content="WP MyLinks <?php echo esc_attr( WP_MYLINKS_VERSION ); ?>">
+	<meta charset="<?php bloginfo( 'charset' ); ?>">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="generator" content="WP MyLinks <?php echo esc_attr( WP_MYLINKS_VERSION ); ?>">
 <?php if ( '' !== $favicon ) : ?>
-  <link rel="icon" type="image/png" href="<?php echo esc_url( $favicon ); ?>">
+	<link rel="icon" type="image/png" href="<?php echo esc_url( $favicon ); ?>">
 <?php endif; ?>
-  <title><?php echo esc_html( $meta_title ); ?></title>
-  <meta name="description" content="<?php echo esc_attr( $meta_description ); ?>">
-  <meta name="robots" content="<?php echo esc_attr( $noindex . ', ' . $nofollow ); ?>, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+	<title><?php echo esc_html( $meta_title ); ?></title>
+	<meta name="description" content="<?php echo esc_attr( $meta_description ); ?>">
+	<meta name="robots" content="<?php echo esc_attr( $noindex . ', ' . $nofollow ); ?>, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 
 <?php if ( '' !== $plugin_styles_html ) : ?>
-  <?php echo $plugin_styles_html . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WP-generated stylesheet tags. ?>
+	<?php echo $plugin_styles_html . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WP-generated stylesheet tags. ?>
 <?php endif; ?>
-  <style id="wp-mylinks-inline-css">
+	<style id="wp-mylinks-inline-css">
 <?php echo $inline_css_block . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS sanitized via wp_strip_all_tags() before entering $inline_css_chunks; esc_html() would corrupt child selectors (> becomes &gt;). ?>
-  </style>
+	</style>
 <?php
 if ( '' !== $og_meta_block ) {
 	echo "\n" . $og_meta_block . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped above.
@@ -408,8 +499,8 @@ do_action( 'wp_mylinks_head', $post_id );
 ?>
 </head>
 
-<body class="mylinks-body <?php echo esc_attr( $body_theme ); ?>">
-  <a class="screen-reader-text" href="#wp-mylinks-content"><?php esc_html_e( 'Skip to content', 'wp-mylinks' ); ?></a>
+<body class="mylinks-body <?php echo esc_attr( $body_theme ); ?>" data-wml-post="<?php echo (int) $post_id; ?>" data-wml-ajax="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>">
+	<a class="screen-reader-text" href="#wp-mylinks-content"><?php esc_html_e( 'Skip to content', 'wp-mylinks' ); ?></a>
 <?php
 if ( '' !== $body_script ) {
 	echo wp_kses( $body_script, $wp_mylinks_allowed_script_tags ) . "\n";
@@ -444,37 +535,96 @@ while ( have_posts() ) :
 	$links_markup = '';
 	$links        = get_post_meta( $post_id, mylinks_prefix( 'links' ), true );
 
-	foreach ( (array) $links as $link ) {
-		$title       = isset( $link['title'] ) ? (string) $link['title'] : '';
-		$url         = isset( $link['url'] ) ? (string) $link['url'] : '';
+	foreach ( (array) $links as $link_index => $link ) {
+		/**
+		 * Filter a link row's data before it renders.
+		 *
+		 * The row is the stored group array (title, url, select_url, image,
+		 * card-layout, youtube-video, media-embed, …). Return an empty value
+		 * to skip rendering this link entirely — Pro's scheduling and A/B
+		 * features hook here.
+		 *
+		 * @since 1.1.0
+		 *
+		 * @param array $link       Link row data.
+		 * @param int   $post_id    Current MyLink post ID.
+		 * @param int   $link_index Zero-based position in the stored list.
+		 */
+		$link = apply_filters( 'wp_mylinks_link_data', $link, $post_id, $link_index );
+		if ( empty( $link ) || ! is_array( $link ) ) {
+			continue;
+		}
+
+		$title = isset( $link['title'] ) ? (string) $link['title'] : '';
+		$url   = isset( $link['url'] ) ? (string) $link['url'] : '';
+
+		// Prefer the picked Collection/post's CURRENT URL over the snapshot
+		// copied at pick time, so edited Collections propagate (1.1.0).
+		if ( isset( $link['select_url'] ) && function_exists( 'wp_mylinks_resolve_selected_url' ) ) {
+			$fresh_url = wp_mylinks_resolve_selected_url( $link['select_url'] );
+			if ( '' !== $fresh_url ) {
+				$url = $fresh_url;
+			}
+		}
 		$image       = isset( $link['image'] ) ? (string) $link['image'] : '';
 		$youtube_url = isset( $link['youtube-video'] ) ? (string) $link['youtube-video'] : '';
 		$embed       = isset( $link['media-embed'] ) ? (string) $link['media-embed'] : '';
 		$card_layout = isset( $link['card-layout'] ) && 'yes' === $link['card-layout'];
+		$row_type    = isset( $link['row-type'] ) ? (string) $link['row-type'] : 'link';
+		$item_html   = '';
 
-		// 1. YouTube placeholder.
-		if ( '' !== $youtube_url && '' === $embed ) {
+		// 0a. Section heading row (groups the links below it). New in 1.1.0.
+		if ( 'heading' === $row_type ) {
+			if ( '' === trim( $title ) ) {
+				continue;
+			}
+			$item_html = '      <div class="link-heading">' . "\n"
+				. '        <h2 class="mylinks-section-heading">' . esc_html( $title ) . '</h2>' . "\n"
+				. '      </div>' . "\n";
+		} elseif ( 'html' === $row_type ) {
+			// 0b. HTML block row (a form, table, or embed). New in 1.1.0. Output
+			// is gated on the page author's capability, mirroring the per-page
+			// custom scripts: a trusted author keeps raw markup (iframes, embed
+			// scripts), everyone else gets a safe subset via wp_kses_post. This
+			// also neutralizes any legacy untrusted-authored block at render.
+			$html_block = isset( $link['html-block'] ) ? (string) $link['html-block'] : '';
+			if ( '' === trim( $html_block ) ) {
+				continue;
+			}
+			// An HTML block is general content (forms, tables, embeds), so a
+			// trusted author gets it verbatim, exactly as core outputs post
+			// content for unfiltered_html users. Everyone else (and any legacy
+			// untrusted-authored block) is filtered through wp_kses_post, which
+			// keeps tables/lists/formatting but strips script and iframe.
+			$safe_html = ( $post_id && author_can( $post_id, 'unfiltered_html' ) )
+				? $html_block
+				: wp_kses_post( $html_block );
+			$item_html = '      <div class="link mylinks-html-block">' . "\n"
+				. '        ' . $safe_html . "\n"
+				. '      </div>' . "\n";
+		} elseif ( '' !== $youtube_url && '' === $embed ) {
+			// 1. YouTube placeholder.
 			$video_id = wp_mylinks_extract_youtube_id( $youtube_url );
 			if ( '' === $video_id ) {
 				continue;
 			}
-			$links_markup .= sprintf(
+			$item_html = sprintf(
 				'      <div class="link youtube-embed">' . "\n"
 				. '        <div class="youtube-player" data-id="%s"></div>' . "\n"
 				. '      </div>' . "\n",
 				esc_attr( $video_id )
 			);
-			continue;
-		}
-
-		// 2. Generic oEmbed (TikTok, Spotify, Tweets, etc).
-		if ( '' !== $embed && '' === $youtube_url ) {
+		} elseif ( '' !== $embed && '' === $youtube_url ) {
+			// 2. Generic oEmbed (TikTok, Spotify, Tweets, etc).
 			$cache_key  = 'wp_mylinks_oembed_' . md5( $embed );
 			$embed_html = get_transient( $cache_key );
 			if ( false === $embed_html ) {
+				// wp_oembed_get() output is already filtered by core. The previous
+				// wp_filter_oembed_result() call here passed a URL string where core
+				// expects the oEmbed data object — a no-op that raised "property on
+				// string" warnings on PHP 8. Removed in 1.1.0.
 				$embed_html = wp_oembed_get( $embed );
 				if ( $embed_html && ! is_wp_error( $embed_html ) ) {
-					$embed_html = wp_filter_oembed_result( $embed_html, $embed, array(), $post );
 					set_transient( $cache_key, $embed_html, DAY_IN_SECONDS );
 				}
 			}
@@ -482,25 +632,25 @@ while ( have_posts() ) :
 			if ( is_string( $embed_html ) && '' !== $embed_html ) {
 				$inner = $embed_html;
 			} elseif ( is_wp_error( $embed_html ) ) {
-				$inner = esc_html__( 'Unable to embed the content. Reason: ', 'wp-mylinks' )
-					. esc_html( $embed_html->get_error_message() );
+				$inner = sprintf(
+					/* translators: %s: the reason the embed failed. */
+					esc_html__( 'Unable to embed the content. Reason: %s', 'wp-mylinks' ),
+					esc_html( $embed_html->get_error_message() )
+				);
 			} else {
 				$inner = esc_html__( 'Unable to embed the content.', 'wp-mylinks' );
 			}
 
-			$links_markup .= '      <div class="link media-embed-wrapper">' . "\n"
+			$item_html = '      <div class="link media-embed-wrapper">' . "\n"
 				. '        <div class="media-embed">' . "\n"
 				. '          ' . $inner . "\n"
 				. '        </div>' . "\n"
 				. '      </div>' . "\n";
-			continue;
-		}
-
-		// 3. Card layout (image + title + url, image used as background).
-		if ( $card_layout && '' !== $title && '' !== $url && '' !== $image ) {
+		} elseif ( $card_layout && '' !== $title && '' !== $url && '' !== $image ) {
+			// 3. Card layout (image + title + url, image used as background).
 			/* translators: %s: link title */
 			$aria_label = sprintf( __( '%s (opens in a new tab)', 'wp-mylinks' ), $title );
-			$links_markup .= sprintf(
+			$item_html  = sprintf(
 				'      <div class="card-wrapper">' . "\n"
 				. '        <div class="mylink-card">' . "\n"
 				. '          <a class="mylink-card-link link_count" href="%1$s" target="_blank" rel="noopener" aria-label="%4$s">' . "\n"
@@ -516,14 +666,11 @@ while ( have_posts() ) :
 				esc_html( $title ),
 				esc_attr( $aria_label )
 			);
-			continue;
-		}
-
-		// 4. Plain link, no thumbnail.
-		if ( '' === $image && '' !== $url && '' !== $title ) {
+		} elseif ( '' === $image && '' !== $url && '' !== $title ) {
+			// 4. Plain link, no thumbnail.
 			/* translators: %s: link title */
 			$aria_label = sprintf( __( '%s (opens in a new tab)', 'wp-mylinks' ), $title );
-			$links_markup .= sprintf(
+			$item_html  = sprintf(
 				'      <div class="link">' . "\n"
 				. '        <a class="button link-without-image inline-photo show-on-scroll link_count" href="%1$s" target="_blank" rel="noopener" aria-label="%3$s">' . "\n"
 				. '          <span class="link-text">%2$s</span>' . "\n"
@@ -533,14 +680,11 @@ while ( have_posts() ) :
 				esc_html( $title ),
 				esc_attr( $aria_label )
 			);
-			continue;
-		}
-
-		// 5. Link with thumbnail.
-		if ( '' !== $image && '' !== $url && '' !== $title ) {
+		} elseif ( '' !== $image && '' !== $url && '' !== $title ) {
+			// 5. Link with thumbnail.
 			/* translators: %s: link title */
 			$aria_label = sprintf( __( '%s (opens in a new tab)', 'wp-mylinks' ), $title );
-			$links_markup .= sprintf(
+			$item_html  = sprintf(
 				'      <div class="link">' . "\n"
 				. '        <a class="button link-with-image inline-photo show-on-scroll link_count" href="%1$s" target="_blank" rel="noopener" aria-label="%4$s">' . "\n"
 				. '          <div class="thumbnail-wrap">' . "\n"
@@ -555,65 +699,93 @@ while ( have_posts() ) :
 				esc_attr( $aria_label )
 			);
 		}
+
+		if ( '' === $item_html ) {
+			continue;
+		}
+
+		/**
+		 * Filter one rendered link item's HTML.
+		 *
+		 * The markup is fully escaped. Pro's cloaking and UTM features hook
+		 * here; return '' to drop the item.
+		 *
+		 * @since 1.1.0
+		 *
+		 * @param string $item_html  Escaped HTML for this link item.
+		 * @param array  $link       The (already-filtered) link row data.
+		 * @param int    $post_id    Current MyLink post ID.
+		 * @param int    $link_index Zero-based position in the stored list.
+		 */
+		$links_markup .= (string) apply_filters( 'wp_mylinks_link_render', $item_html, $link, $post_id, $link_index );
 	}
 
+	$enable_search  = ( 'yes' === (string) get_post_meta( $post_id, mylinks_prefix( 'enable-search' ), true ) );
 	$top_socials    = ( 'top' === $social_position ) ? $wp_mylinks_build_socials( '    ', $post_id ) : '';
 	$bottom_socials = ( 'bottom' === $social_position ) ? $wp_mylinks_build_socials( '  ', $post_id ) : '';
 	?>
 
-  <main class="mylinks" id="wp-mylinks-content" tabindex="-1">
-    <div class="avatar">
-<?php if ( '' !== $avatar ) : ?>
-      <img width="140" height="140" src="<?php echo esc_url( $avatar ); ?>" alt="<?php echo esc_attr( '' !== $name ? $name : __( 'Profile picture', 'wp-mylinks' ) ); ?>">
-<?php endif; ?>
-    </div>
+	<main class="mylinks" id="wp-mylinks-content" tabindex="-1">
+	<div class="avatar">
+	<?php if ( '' !== $avatar ) : ?>
+		<img width="140" height="140" src="<?php echo esc_url( $avatar ); ?>" alt="<?php echo esc_attr( '' !== $name ? $name : __( 'Profile picture', 'wp-mylinks' ) ); ?>">
+	<?php endif; ?>
+	</div>
 
-    <div class="name">
-      <h1><?php echo esc_html( $name ); ?></h1>
-    </div>
+	<div class="name">
+		<h1><?php echo esc_html( $name ); ?></h1>
+	</div>
 
-<?php if ( '' !== trim( $description ) ) : ?>
-    <div class="description">
-      <?php echo wp_kses_post( wpautop( $description ) ); ?>
-    </div>
-<?php endif; ?>
+	<?php if ( '' !== trim( $description ) ) : ?>
+	<div class="description">
+		<?php echo wp_kses_post( wpautop( $description ) ); ?>
+	</div>
+	<?php endif; ?>
 
-<?php
-if ( '' !== $top_socials ) {
-	echo $top_socials; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped in builder.
-}
+	<?php
+	if ( '' !== $top_socials ) {
+		echo $top_socials; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped in builder.
+	}
 
-/**
- * Fires before the link list is rendered.
- *
- * @since 1.0.8
- *
- * @param int $post_id Current MyLink post ID.
- */
-do_action( 'wp_mylinks_before_links', $post_id );
-?>
+	/**
+	 * Fires before the link list is rendered.
+	 *
+	 * @since 1.0.8
+	 *
+	 * @param int $post_id Current MyLink post ID.
+	 */
+	do_action( 'wp_mylinks_before_links', $post_id );
+	?>
 
-    <div class="links">
-<?php
-if ( '' !== $links_markup ) {
-	echo $links_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped in builder.
-}
-?>
-    </div>
+	<?php if ( $enable_search ) : ?>
+	<div class="mylinks-search">
+		<label class="screen-reader-text" for="mylinks-search-input"><?php esc_html_e( 'Search links', 'wp-mylinks' ); ?></label>
+		<input type="search" id="mylinks-search-input" class="mylinks-search__input" placeholder="<?php esc_attr_e( 'Search links…', 'wp-mylinks' ); ?>" autocomplete="off" aria-controls="wp-mylinks-links">
+		<p class="mylinks-search__empty" role="status" aria-live="polite" hidden><?php esc_html_e( 'No links match your search.', 'wp-mylinks' ); ?></p>
+	</div>
+	<?php endif; ?>
 
-<?php
-/**
- * Fires after the link list is rendered.
- *
- * @since 1.0.8
- *
- * @param int $post_id Current MyLink post ID.
- */
-do_action( 'wp_mylinks_after_links', $post_id );
-?>
-  </main>
+	<div class="links" id="wp-mylinks-links"<?php echo $enable_search ? ' data-wml-search="1"' : ''; ?>>
+	<?php
+	if ( '' !== $links_markup ) {
+		echo $links_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped in builder.
+	}
+	?>
+	</div>
 
-<?php
+	<?php
+	/**
+	 * Fires after the link list is rendered.
+	 *
+	 * @since 1.0.8
+	 *
+	 * @param int $post_id Current MyLink post ID.
+	 */
+	do_action( 'wp_mylinks_after_links', $post_id );
+	?>
+	</main>
+
+	<?php
 	wp_mylinks_track_mylink_page( $post_id );
 endwhile;
 
@@ -622,19 +794,23 @@ if ( '' !== $bottom_socials ) {
 }
 ?>
 
-  <footer id="site-footer" class="mylinks-footer" role="contentinfo">
+	<footer id="site-footer" class="mylinks-footer" role="contentinfo">
 <?php if ( 'yes' === get_option( 'wp_mylinks_credits' ) ) : ?>
-    <div class="wp-mylinks-credits">
-      <?php
+	<div class="wp-mylinks-credits">
+		<?php
 		echo wp_kses(
 			__( 'Made with ❤️ and ☕ by <a href="https://walterpinem.me/" target="_blank" rel="noopener nofollow"><strong>Walter Pinem</strong></a>', 'wp-mylinks' ),
 			array(
-				'a'      => array( 'href' => array(), 'target' => array(), 'rel' => array() ),
+				'a'      => array(
+					'href'   => array(),
+					'target' => array(),
+					'rel'    => array(),
+				),
 				'strong' => array(),
 			)
 		);
 		?>
-    </div>
+	</div>
 <?php endif; ?>
 <?php
 if ( '' !== $footer_script ) {
@@ -650,10 +826,10 @@ if ( '' !== $footer_script ) {
  */
 do_action( 'wp_mylinks_footer', $post_id );
 ?>
-  </footer>
+	</footer>
 
 <?php if ( '' !== $plugin_script_html ) : ?>
-  <?php echo $plugin_script_html . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WP-generated script tag. ?>
+	<?php echo $plugin_script_html . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WP-generated script tag. ?>
 <?php endif; ?>
 </body>
 </html>

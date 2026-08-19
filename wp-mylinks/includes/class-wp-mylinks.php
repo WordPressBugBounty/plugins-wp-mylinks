@@ -31,8 +31,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage Wp_Mylinks/includes
  * @author     Walter Pinem <hello@walterpinem.me>
  */
-class Wp_Mylinks
-{
+class Wp_Mylinks {
+
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -71,9 +71,8 @@ class Wp_Mylinks
 	 *
 	 * @since    1.0.0
 	 */
-	public function __construct()
-	{
-		if (defined('WP_MYLINKS_VERSION')) {
+	public function __construct() {
+		if ( defined('WP_MYLINKS_VERSION') ) {
 			$this->version = WP_MYLINKS_VERSION;
 		} else {
 			$this->version = '1.0.0';
@@ -92,7 +91,7 @@ class Wp_Mylinks
 	 * Include the following files that make up the plugin:
 	 *
 	 * - Wp_Mylinks_Loader. Orchestrates the hooks of the plugin.
-	 * - Wp_Mylinks_i18n. Defines internationalization functionality.
+	 * - Wp_Mylinks_I18n. Defines internationalization functionality.
 	 * - Wp_Mylinks_Admin. Defines all hooks for the admin area.
 	 * - Wp_Mylinks_Public. Defines all hooks for the public side of the site.
 	 *
@@ -102,41 +101,30 @@ class Wp_Mylinks
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function load_dependencies()
-	{
+	private function load_dependencies() {
 
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wp-mylinks-loader.php';
+		require_once plugin_dir_path(__DIR__) . 'includes/class-wp-mylinks-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wp-mylinks-i18n.php';
-
-		/**
-		 * The class responsible for including Select2 into the plugin
-		 * Original code by Phil Wylie
-		 * CMB2 Field Type: Select2
-		 * https://github.com/mustardBees/cmb-field-select2
-		 * Version: 3.0.3
-		 * License: GPLv2+
-		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-cmb-field-select2.php';
+		require_once plugin_dir_path(__DIR__) . 'includes/class-wp-mylinks-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-wp-mylinks-admin.php';
+		require_once plugin_dir_path(__DIR__) . 'admin/class-wp-mylinks-admin.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'public/class-wp-mylinks-public.php';
+		require_once plugin_dir_path(__DIR__) . 'public/class-wp-mylinks-public.php';
 
 		$this->loader = new Wp_Mylinks_Loader();
 	}
@@ -144,16 +132,15 @@ class Wp_Mylinks
 	/**
 	 * Define the locale for this plugin for internationalization.
 	 *
-	 * Uses the Wp_Mylinks_i18n class in order to set the domain and to register the hook
+	 * Uses the Wp_Mylinks_I18n class in order to set the domain and to register the hook
 	 * with WordPress.
 	 *
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function set_locale()
-	{
+	private function set_locale() {
 
-		$plugin_i18n = new Wp_Mylinks_i18n();
+		$plugin_i18n = new Wp_Mylinks_I18n();
 
 		$this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
 	}
@@ -165,8 +152,7 @@ class Wp_Mylinks
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function define_admin_hooks()
-	{
+	private function define_admin_hooks() {
 
 		$plugin_admin = new Wp_Mylinks_Admin($this->get_plugin_name(), $this->get_version());
 
@@ -181,8 +167,7 @@ class Wp_Mylinks
 	 * @since    1.0.0
 	 * @access   private
 	 */
-	private function define_public_hooks()
-	{
+	private function define_public_hooks() {
 
 		$plugin_public = new Wp_Mylinks_Public($this->get_plugin_name(), $this->get_version());
 
@@ -195,8 +180,7 @@ class Wp_Mylinks
 	 *
 	 * @since    1.0.0
 	 */
-	public function run()
-	{
+	public function run() {
 		$this->loader->run();
 	}
 
@@ -207,8 +191,7 @@ class Wp_Mylinks
 	 * @since     1.0.0
 	 * @return    string    The name of the plugin.
 	 */
-	public function get_plugin_name()
-	{
+	public function get_plugin_name() {
 		return $this->plugin_name;
 	}
 
@@ -218,8 +201,7 @@ class Wp_Mylinks
 	 * @since     1.0.0
 	 * @return    Wp_Mylinks_Loader    Orchestrates the hooks of the plugin.
 	 */
-	public function get_loader()
-	{
+	public function get_loader() {
 		return $this->loader;
 	}
 
@@ -229,8 +211,7 @@ class Wp_Mylinks
 	 * @since     1.0.0
 	 * @return    string    The version number of the plugin.
 	 */
-	public function get_version()
-	{
+	public function get_version() {
 		return $this->version;
 	}
 }

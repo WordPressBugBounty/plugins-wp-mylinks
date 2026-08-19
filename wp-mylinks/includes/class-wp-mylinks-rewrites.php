@@ -24,14 +24,14 @@
  * @author     Walter Pinem <hello@walterpinem.me>
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined('ABSPATH') ) {
 	exit;
 }
 
-if (!class_exists('Wp_Mylinks_Rewrites')) :
+if ( ! class_exists('Wp_Mylinks_Rewrites') ) :
 
-	final class Wp_Mylinks_Rewrites
-	{
+	final class Wp_Mylinks_Rewrites {
+
 
 		/**
 		 * The post type this rewriter targets.
@@ -50,9 +50,8 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 		/**
 		 * Get / create the single instance.
 		 */
-		public static function instance()
-		{
-			if (null === self::$instance) {
+		public static function instance() {
+			if ( null === self::$instance ) {
 				self::$instance = new self();
 			}
 			return self::$instance;
@@ -61,20 +60,19 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 		/**
 		 * Wire up filters and actions.
 		 */
-		private function __construct()
-		{
+		private function __construct() {
 			// Strip the post-type slug from generated permalinks.
-			add_filter('post_type_link', array($this, 'strip_post_type_slug'), 10, 3);
+			add_filter('post_type_link', array( $this, 'strip_post_type_slug' ), 10, 2);
 
 			// Resolve slug-only URLs to mylink posts (with conflict avoidance).
-			add_filter('request', array($this, 'resolve_request'));
+			add_filter('request', array( $this, 'resolve_request' ));
 
 			// Canonicalize: /mylink/foo/ -> /foo/ (301).
-			add_action('template_redirect', array($this, 'canonical_redirect'), 1);
+			add_action('template_redirect', array( $this, 'canonical_redirect' ), 1);
 
 			// Make the admin "View" link and post-row links use the stripped URL.
 			// (post_type_link covers most cases; this is belt-and-suspenders.)
-			add_filter('preview_post_link', array($this, 'preview_post_link'), 10, 2);
+			add_filter('preview_post_link', array( $this, 'preview_post_link' ), 10, 2);
 		}
 
 		/**
@@ -86,31 +84,29 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 		 *
 		 * @param string  $post_link Generated permalink.
 		 * @param WP_Post $post      Post object.
-		 * @param bool    $leavename Whether to leave the post name placeholder.
 		 * @return string
 		 */
-		public function strip_post_type_slug($post_link, $post, $leavename)
-		{
-			if (!($post instanceof WP_Post)) {
+		public function strip_post_type_slug( $post_link, $post ) {
+			if ( ! ( $post instanceof WP_Post ) ) {
 				return $post_link;
 			}
-			if (self::POST_TYPE !== $post->post_type || 'publish' !== $post->post_status) {
+			if ( self::POST_TYPE !== $post->post_type || 'publish' !== $post->post_status ) {
 				return $post_link;
 			}
 
 			// Ask the registered post type for its actual rewrite slug; default to 'mylink'.
 			$pto  = get_post_type_object(self::POST_TYPE);
-			$slug = (isset($pto->rewrite['slug']) && is_string($pto->rewrite['slug']) && '' !== $pto->rewrite['slug'])
+			$slug = ( isset($pto->rewrite['slug']) && is_string($pto->rewrite['slug']) && '' !== $pto->rewrite['slug'] )
 				? trim($pto->rewrite['slug'], '/')
 				: self::POST_TYPE;
 
-			if ('' === $slug) {
+			if ( '' === $slug ) {
 				return $post_link;
 			}
 
 			// Only strip the FIRST /<slug>/ segment in the path, anchored to home_url().
-			$home = trailingslashit(home_url());
-			$pattern = '#^(' . preg_quote($home, '#') . ')' . preg_quote($slug, '#') . '/#';
+			$home      = trailingslashit(home_url());
+			$pattern   = '#^(' . preg_quote($home, '#') . ')' . preg_quote($slug, '#') . '/#';
 			$post_link = preg_replace($pattern, '$1', $post_link, 1);
 
 			return $post_link;
@@ -119,10 +115,9 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 		/**
 		 * Adjust preview links so the front-end preview matches the live URL.
 		 */
-		public function preview_post_link($preview_link, $post)
-		{
-			if ($post instanceof WP_Post && self::POST_TYPE === $post->post_type) {
-				return $this->strip_post_type_slug($preview_link, $post, false);
+		public function preview_post_link( $preview_link, $post ) {
+			if ( $post instanceof WP_Post && self::POST_TYPE === $post->post_type ) {
+				return $this->strip_post_type_slug($preview_link, $post);
 			}
 			return $preview_link;
 		}
@@ -144,27 +139,26 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 		 * @param array $query_vars
 		 * @return array
 		 */
-		public function resolve_request($query_vars)
-		{
+		public function resolve_request( $query_vars ) {
 			// Skip admin and REST requests entirely.
-			if (is_admin() || (defined('REST_REQUEST') && REST_REQUEST)) {
+			if ( is_admin() || ( defined('REST_REQUEST') && REST_REQUEST ) ) {
 				return $query_vars;
 			}
 
 			// Only act on bare slug requests.
 			$slug = $this->extract_slug_from_query_vars($query_vars);
-			if (null === $slug) {
+			if ( null === $slug ) {
 				return $query_vars;
 			}
 
 			// If a published page or post owns this slug, defer to it.
-			if ($this->slug_belongs_to_other_post_type($slug)) {
+			if ( $this->slug_belongs_to_other_post_type($slug) ) {
 				return $query_vars;
 			}
 
 			// Confirm a published mylink with this slug actually exists before
 			// rewriting query vars — avoids creating false 404s for unrelated 404s.
-			if (!$this->mylink_exists_for_slug($slug)) {
+			if ( ! $this->mylink_exists_for_slug($slug) ) {
 				return $query_vars;
 			}
 
@@ -182,20 +176,19 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 		 * Pull a candidate slug out of WP's parsed query vars, if this looks like
 		 * a single-slug page request (e.g. /my-page/).
 		 */
-		private function extract_slug_from_query_vars(array $query_vars)
-		{
+		private function extract_slug_from_query_vars( array $query_vars ) {
 			// Page-style URL: WP set 'pagename' for /my-page/.
-			if (!empty($query_vars['pagename']) && is_string($query_vars['pagename'])) {
+			if ( ! empty($query_vars['pagename']) && is_string($query_vars['pagename']) ) {
 				$pagename = $query_vars['pagename'];
 				// Reject nested paths (e.g. parent/child) — those are clearly pages.
-				if (false === strpos($pagename, '/')) {
+				if ( false === strpos($pagename, '/') ) {
 					return $pagename;
 				}
 				return null;
 			}
 
 			// Single-post-style URL: WP set 'name' for /my-page/ when no page matches.
-			if (!empty($query_vars['name']) && is_string($query_vars['name'])) {
+			if ( ! empty($query_vars['name']) && is_string($query_vars['name']) ) {
 				return $query_vars['name'];
 			}
 
@@ -210,11 +203,10 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 		 *
 		 * Result is cached per-request to keep this filter cheap.
 		 */
-		private function slug_belongs_to_other_post_type($slug)
-		{
+		private function slug_belongs_to_other_post_type( $slug ) {
 			static $cache = array();
-			if (isset($cache[$slug])) {
-				return $cache[$slug];
+			if ( isset($cache[ $slug ]) ) {
+				return $cache[ $slug ];
 			}
 
 			global $wpdb;
@@ -234,8 +226,8 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 				)
 			);
 
-			$cache[$slug] = !empty($post_id);
-			return $cache[$slug];
+			$cache[ $slug ] = ! empty($post_id);
+			return $cache[ $slug ];
 		}
 
 		/**
@@ -243,11 +235,10 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 		 *
 		 * Per-request cached to avoid repeat queries.
 		 */
-		private function mylink_exists_for_slug($slug)
-		{
+		private function mylink_exists_for_slug( $slug ) {
 			static $cache = array();
-			if (isset($cache[$slug])) {
-				return $cache[$slug];
+			if ( isset($cache[ $slug ]) ) {
+				return $cache[ $slug ];
 			}
 
 			global $wpdb;
@@ -266,27 +257,26 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 				)
 			);
 
-			$cache[$slug] = !empty($post_id);
-			return $cache[$slug];
+			$cache[ $slug ] = ! empty($post_id);
+			return $cache[ $slug ];
 		}
 
 		/**
 		 * If the request is /<cpt-slug>/<name>/, redirect to /<name>/ for
 		 * canonical SEO consistency. Only fires for actual, resolved mylink posts.
 		 */
-		public function canonical_redirect()
-		{
-			if (is_admin() || wp_doing_ajax()) {
+		public function canonical_redirect() {
+			if ( is_admin() || wp_doing_ajax() ) {
 				return;
 			}
 
 			global $wp;
-			if (!isset($wp->request) || '' === $wp->request) {
+			if ( ! isset($wp->request) || '' === $wp->request ) {
 				return;
 			}
 
 			$pto  = get_post_type_object(self::POST_TYPE);
-			$slug = (isset($pto->rewrite['slug']) && is_string($pto->rewrite['slug']) && '' !== $pto->rewrite['slug'])
+			$slug = ( isset($pto->rewrite['slug']) && is_string($pto->rewrite['slug']) && '' !== $pto->rewrite['slug'] )
 				? trim($pto->rewrite['slug'], '/')
 				: self::POST_TYPE;
 
@@ -294,16 +284,16 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 			$prefix  = $slug . '/';
 
 			// Only redirect when the path starts with /<slug>/ AND something follows.
-			if (0 !== strpos($request, $prefix)) {
+			if ( 0 !== strpos($request, $prefix) ) {
 				return;
 			}
 			$remainder = substr($request, strlen($prefix));
-			if ('' === $remainder) {
+			if ( '' === $remainder ) {
 				return;
 			}
 
 			// Only redirect single-slug requests; leave deeper paths alone.
-			if (false !== strpos($remainder, '/')) {
+			if ( false !== strpos($remainder, '/') ) {
 				return;
 			}
 
@@ -329,10 +319,9 @@ if (!class_exists('Wp_Mylinks_Rewrites')) :
 		 * Run a one-time rewrite-rules flush. Call this on activation and
 		 * whenever the rewrite slug changes.
 		 */
-		public static function flush()
-		{
+		public static function flush() {
 			// Make sure the post type is registered before we flush.
-			if (function_exists('wp_mylinks_register_post_type')) {
+			if ( function_exists('wp_mylinks_register_post_type') ) {
 				wp_mylinks_register_post_type();
 			}
 			flush_rewrite_rules(false);
