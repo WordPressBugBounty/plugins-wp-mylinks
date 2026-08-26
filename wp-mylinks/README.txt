@@ -3,8 +3,8 @@ Contributors: walterpinem
 Donate link: https://www.paypal.me/WalterPinem
 Tags: linktree, link in bio, landing page, social profile, schema
 Requires at least: 6.0
-Tested up to: 7.0
-Stable tag: 1.1.0
+Tested up to: 7.1
+Stable tag: 1.1.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -24,7 +24,7 @@ Every social profile gives you a single link in the bio, and fitting more than o
 #### Stop renting your most-clicked link.
 A link-in-bio page is often the busiest URL you have, and on a hosted service that URL, its analytics, and its search value belong to the platform. 
 
-WP MyLinks builds the same page inside your WordPress site, at an address like `yoursite.com/me`, with your branding and no subscription. Every feature is free.
+WP MyLinks builds the same page inside your WordPress site, at an address like `yoursite.com/me`, with your branding and no subscription. Every feature described here is free.
 
 #### Keep 100% of your traffic.
 Put your MyLink URL in every bio and profile, and drive all of that traffic to a page on your own domain instead of a platform's. Clicks are counted in your own dashboard, and no visitor data ever leaves your site.
@@ -56,6 +56,22 @@ Put your MyLink URL in every bio and profile, and drive all of that traffic to a
 *   **Unlimited Links**: Fill your landing page(s) with links to market your contents, products, or anything you want to build your own brands.
 *   **Add Thumbnails**: Add a thumbnail to each link that best represents it.
 *   **And more awesome features to come!**
+
+### Go further with WP MyLinks Pro
+
+[**WP MyLinks Pro**](https://www.onlinestorekit.com/kit/wp-mylinks-pro/ "WP MyLinks Pro") is an optional paid add-on that installs beside the free plugin and extends it through its public hooks. Your pages, links, and themes keep working exactly as before, and nothing free ever moves behind the paywall. Pro adds:
+
+*   **Analytics dashboard**: charts, countries, devices, referrers, campaigns, and CSV export, all stored in your own database with no IP addresses collected.
+*   **Link scheduling & targeting**: show a link from/until a date, by device, by country, or to logged-in/logged-out visitors only.
+*   **A/B testing**: rotate link variants and see impressions, clicks, and click-through rate per test.
+*   **UTM tagging & link cloaking**: automatic campaign parameters and pretty `/go/` redirect links with server-side click counting.
+*   **Instagram-style layouts**: turn your links into a photo grid with square, portrait, or tall tiles, and add a story-highlights strip above them.
+*   **Content elements & email capture**: countdown timers, FAQ rows, dividers, text blocks, and a signup form with Mailchimp, Kit, MailerLite, and ActiveCampaign sync.
+*   **Theme Builder**: edit any of the 16 themes or build your own, with gradients, background images, per-element typography, button hover states, avatar, cards, social icons, and search bar controls.
+*   **Branded QR codes**: your logo in the center, custom colors, dot and rounded styles, and high-resolution PNG plus print-ready vector SVG downloads.
+*   **Live Builder**: drag-and-drop visual editing with a true live preview of your actual page, theme and all.
+
+[**Learn more about WP MyLinks Pro →**](https://www.onlinestorekit.com/wp-mylinks/ "WP MyLinks Pro")
 
 > For more info, please refer to [WP MyLinks Introduction](https://walterpinem.me/projects/introducing-wp-mylinks/ "WP MyLinks").
 > For Indonesian users, please refer to [WP MyLinks](https://www.seniberpikir.com/wp-mylinks/ "WP MyLinks") instead.
@@ -99,6 +115,9 @@ Premium-quality support without having to spend a dime. Just send your inquiry o
 == Frequently Asked Questions ==
 = Is it free to use? =
 Definitely free to use for unlimited sites! :)
+
+= Is there a Pro version? =
+Yes. [WP MyLinks Pro](https://www.onlinestorekit.com/wp-mylinks/ "WP MyLinks Pro") is an optional paid add-on with an analytics dashboard, link scheduling and targeting, A/B testing, UTM tagging and link cloaking, Instagram-style layouts, email capture, a Theme Builder, branded QR codes, and a drag-and-drop Live Builder. The free plugin stays fully functional without it, and nothing free ever moves behind the paywall.
 
 = How to install and use WP MyLinks? =
 4 simple steps to start:
@@ -165,8 +184,28 @@ Please do not hesitate to send your inquiry through the [support form](https://w
 4. The Welcome tab with quick start, tutorial video, and troubleshooting
 5. QR code generation right on the editor, with one-click PNG download
 
+== Third-party libraries ==
+
+WP MyLinks bundles these open-source libraries, served locally from your own site — no CDN calls, no visitor data leaves your server:
+
+* [QR Code Generator for JavaScript](https://github.com/kazuhikoarase/qrcode-generator) 1.4.4 by Kazuhiko Arase — MIT license. Powers the QR code side box. The word "QR Code" is a registered trademark of DENSO WAVE INCORPORATED.
+* [Select2](https://select2.org/) 4.1.0-rc.0 — MIT license. Powers the searchable link picker in the editor.
+* [Simple Icons](https://simpleicons.org/) — CC0 1.0. Source of the brand glyphs in the bundled SVG social chip icons.
+
 == Changelog ==
 The complete, formatted version history is also published at [onlinestorekit.com/changelog/wp-mylinks](https://www.onlinestorekit.com/changelog/wp-mylinks/ "WP MyLinks Changelog").
+
+= 1.1.1 - August 25, 2026 =
+
+Maintenance release: WordPress 7.1 compatibility and housekeeping.
+
+* [New] **Third-party libraries** section in this readme crediting the bundled open-source libraries (QR Code Generator for JavaScript, Select2, Simple Icons), and the bundled Select2 stylesheet regained its MIT license banner.
+* [Improved] The MyLinks admin menu now shows the plugin's own brand icon instead of a generic Dashicon.
+* [Improved] More Plugins tab refreshed: External Marketplace Buttons added, PixMapr and PixSwipr now link to their released product pages, and placeholder links for unreleased plugins were removed so no card can lead to a missing page.
+* [Improved] The two buttons on each More Plugins card no longer animate on hover; their hover colors are unchanged.
+* [Fixed] The "Export This Page" button in the Import/Export metabox rendered wider than its container and off-center.
+* [Misc] Introduced the WP MyLinks Pro section in the readme.
+* [Misc] Tested up to WordPress 7.1.
 
 = 1.1.0 - August 19, 2026 =
 
@@ -350,6 +389,9 @@ The complete, formatted version history is also published at [onlinestorekit.com
 * Initial release: Hello World!
 
 == Upgrade Notice ==
+= 1.1.1 - August 25, 2026 =
+Maintenance release: WordPress 7.1 compatibility, a refreshed More Plugins tab, the plugin's own brand menu icon, bundled-library credits, and a small Export button fix. Safe update for all users.
+
 = 1.1.0 - August 19, 2026 =
 Major release. New from your requests: section headings, a search/filter bar, HTML blocks, custom fonts, icon-font classes for social links, and a Google Tag Manager dataLayer event. Plus a per-link click counter, QR codes, accent colors, crisp SVG social icons, a full admin redesign, and a 4 times smaller download (the bundled CMB2 framework was replaced by the plugin's own fields system, with zero migration and byte-identical data). Recommended for all users.
 

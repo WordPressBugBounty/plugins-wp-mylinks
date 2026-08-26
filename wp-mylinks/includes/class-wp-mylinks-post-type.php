@@ -80,7 +80,7 @@ function wp_mylinks_register_post_type() {
 		'label'               => __('MyLink', 'wp-mylinks'),
 		'description'         => __('Create micro landing pages that host all of your contents, products, etc to engage your audience and increase your brand awareness.', 'wp-mylinks'),
 		'labels'              => $labels,
-		'menu_icon'           => 'dashicons-admin-links',
+		'menu_icon'           => WP_MYLINKS_URL . 'admin/images/wp-mylinks-icon.png',
 		'supports'            => array( 'title' ),
 		'taxonomies'          => array(),
 		'public'              => true,
@@ -102,6 +102,18 @@ function wp_mylinks_register_post_type() {
 	register_post_type('mylink', $args);
 }
 add_action('init', 'wp_mylinks_register_post_type', 0);
+
+/**
+ * Size the PNG menu icon. Core ships no width rule for image menu icons, so
+ * the 128px source would render full-size; it also dims images to 0.6 opacity,
+ * which muddies a colored brand mark.
+ *
+ * @since 1.2.1
+ */
+function wp_mylinks_menu_icon_css() {
+	echo '<style>#menu-posts-mylink .wp-menu-image img{width:20px;height:20px;padding-top:7px;object-fit:contain;opacity:1}</style>';
+}
+add_action('admin_head', 'wp_mylinks_menu_icon_css');
 
 /*
  * Metabox registration moved to includes/class-wp-mylinks-metaboxes.php in

@@ -120,7 +120,6 @@ class Wp_Mylinks_More_Plugins {
 				'slug'        => 'pixmapr',
 				'landing'     => 'https://www.onlinestorekit.com/pixmapr/',
 				'product'     => 'https://www.onlinestorekit.com/kit/pixmapr/',
-				'soon'        => true,
 			),
 			array(
 				'name'        => 'PixSwipr',
@@ -129,15 +128,14 @@ class Wp_Mylinks_More_Plugins {
 				'slug'        => 'pixswipr',
 				'landing'     => 'https://www.onlinestorekit.com/pixswipr/',
 				'product'     => 'https://www.onlinestorekit.com/kit/pixswipr/',
-				'soon'        => true,
 			),
 			array(
 				'name'        => 'Aerys Smart Links',
 				'description' => __('AI-powered contextual internal linking, auto-linking, and GSC-driven anchor optimization for WordPress.', 'wp-mylinks'),
 				'icon'        => 'aerys-smart-links.png',
 				'slug'        => 'aerys-smart-links',
-				'landing'     => 'https://www.onlinestorekit.com/aerys-smart-links/',
-				'product'     => 'https://www.onlinestorekit.com/kit/aerys-smart-links/',
+				// No landing/product yet — the pages go live with the launch
+				// (placeholder URLs here would 404 from the card buttons).
 				'soon'        => true,
 			),
 		);

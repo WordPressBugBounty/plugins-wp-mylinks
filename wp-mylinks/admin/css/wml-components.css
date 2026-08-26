@@ -486,6 +486,7 @@ a.wml-button-secondary:visited {
   background: var(--wml-surface);
   border: 2px solid var(--wml-line);
   border-radius: 8px;
+  box-sizing: border-box;
   color: var(--wml-text);
   cursor: pointer;
   display: inline-flex;
@@ -934,6 +935,18 @@ a.wml-button-secondary:visited {
   font-size: 14px;
   height: 14px;
   width: 14px;
+}
+
+/* Card buttons keep their hover colors but not the animation — no lift, no
+   eased transition (owner decision, Aug 2026). */
+.wml-plugin__actions .wml-button-primary,
+.wml-plugin__actions .wml-button-secondary {
+  transition: none;
+}
+
+.wml-plugin__actions .wml-button-primary:hover,
+.wml-plugin__actions .wml-button-primary:focus {
+  transform: none;
 }
 
 .wml-plugin__running {
